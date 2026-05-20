@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluación · CIIN1277P · INISCO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════
+       VARIABLES & RESET
+    ══════════════════════════════════════════════ */
+    :root {
+      --bg:        #090c14;
+      --surface:   #111827;
+      --surface2:  #1f2937;
+      --border:    #374151;
+      --primary:   #6366f1;
+      --accent:    #06b6d4;
+      --success:   #10b981;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --text:      #f9fafb;
+      --text-muted:#9ca3af;
+      --font:      'Inter', sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════════════════
+       SCREENS
+    ══════════════════════════════════════════════ */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    #screen-examen.active { display: flex; }
+
+    /* ══════════════════════════════════════════════
+       COMPONENTES REUTILIZABLES
+    ══════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: .5rem; padding: .75rem 1.5rem;
+      border-radius: 8px; border: none;
+      font-family: var(--font); font-size: .9375rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-primary  { background: var(--primary); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled)  { background: #4f46e5; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: var(--border); }
+    .btn-success  { background: var(--success); color: #fff; }
+    .btn-success:hover:not(:disabled)  { background: #059669; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block; font-size: .8125rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: .5rem;
+    }
+    .form-group input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: .75rem 1rem;
+      color: var(--text); font-family: var(--font); font-size: .9375rem;
+      outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--primary); }
+    .form-group input::placeholder { color: var(--text-muted); }
+
+    /* ══════════════════════════════════════════════
+       SCREEN 1 – REGISTRO
+    ══════════════════════════════════════════════ */
+    .registro-container {
+      max-width: 540px; margin: 0 auto; padding: 2rem 1.5rem;
+    }
+    .registro-header { text-align: center; margin-bottom: 2rem; }
+    .badge-curso {
+      display: inline-block; background: var(--primary); color: #fff;
+      font-size: .75rem; font-weight: 600;
+      padding: .25rem .75rem; border-radius: 999px; margin-bottom: .75rem;
+    }
+    .registro-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: .25rem; }
+    .registro-header p  { color: var(--text-muted); font-size: .875rem; }
+
+    .info-badges {
+      display: flex; gap: .75rem; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 2rem;
+    }
+    .info-badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: .5rem 1rem;
+      font-size: .8125rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: .375rem;
+    }
+    .info-badge .val { color: var(--text); font-weight: 600; }
+
+    .lang-selector { margin-bottom: 1.5rem; }
+    .lang-selector > label {
+      display: block; font-size: .8125rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: .75rem;
+    }
+    .lang-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .lang-card {
+      background: var(--surface); border: 2px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+      cursor: pointer; transition: all .2s; text-align: center;
+    }
+    .lang-card:hover { border-color: var(--primary); background: var(--surface2); }
+    .lang-card.selected {
+      border-color: var(--primary);
+      background: rgba(99,102,241,.1);
+    }
+    .lang-card .lang-icon  { font-size: 2rem; margin-bottom: .5rem; }
+    .lang-card .lang-name  { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; }
+    .lang-card .lang-sub   { font-size: .75rem; color: var(--text-muted); }
+
+    .section-label {
+      display: block; font-size: .8125rem; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: 1rem;
+    }
+
+    /* ══════════════════════════════════════════════
+       SCREEN 2 – EXAMEN
+    ══════════════════════════════════════════════ */
+    #screen-examen { flex-direction: column; min-height: 100vh; }
+
+    /* — header sticky — */
+    .exam-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: .75rem 1.25rem;
+    }
+    .exam-header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; margin-bottom: .5rem; flex-wrap: wrap;
+    }
+    .exam-student-info {
+      display: flex; gap: .75rem; align-items: center; flex-wrap: wrap;
+    }
+    .student-name  { font-weight: 600; font-size: .875rem; }
+    .student-code  { font-family: var(--mono); font-size: .8125rem; color: var(--text-muted); }
+    .lang-badge {
+      padding: .2rem .6rem; border-radius: 999px;
+      font-size: .75rem; font-weight: 700;
+    }
+    .lang-badge.cs { background: rgba(99,102,241,.2); color: var(--primary); }
+    .lang-badge.py { background: rgba(6,182,212,.2);  color: var(--accent); }
+
+    .exam-stats { display: flex; gap: 1rem; align-items: center; }
+    .answered-count { font-size: .8125rem; color: var(--text-muted); }
+    .answered-count span { color: var(--success); font-weight: 700; }
+
+    .timer {
+      font-family: var(--mono); font-size: 1rem; font-weight: 700;
+      padding: .3rem .75rem; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      transition: all .3s;
+    }
+    .timer.warning { color: var(--warning); border-color: var(--warning); }
+    .timer.danger  { color: var(--danger);  border-color: var(--danger); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+    .progress-bar-wrap {
+      height: 4px; background: var(--surface2);
+      border-radius: 999px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--primary);
+      border-radius: 999px; transition: width .3s;
+    }
+
+    /* — body examen — */
+    .exam-body {
+      flex: 1; max-width: 720px; width: 100%;
+      margin: 0 auto; padding: 1.5rem;
+    }
+
+    /* — tarjeta de pregunta — */
+    .question-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .question-meta {
+      display: flex; gap: .5rem; align-items: center;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .q-number { font-size: .8125rem; font-weight: 700; color: var(--primary); }
+    .q-bloom-badge {
+      font-size: .6875rem; padding: .2rem .5rem; border-radius: 999px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .bloom-recordar   { background: rgba(16,185,129,.15); color: var(--success); }
+    .bloom-comprender { background: rgba(99,102,241,.15); color: var(--primary); }
+    .bloom-aplicar    { background: rgba(6,182,212,.15);  color: var(--accent); }
+    .bloom-analizar   { background: rgba(245,158,11,.15); color: var(--warning); }
+    .bloom-evaluar    { background: rgba(239,68,68,.15);  color: var(--danger); }
+    .q-nivel-badge {
+      font-size: .6875rem; padding: .2rem .5rem; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--text-muted);
+    }
+    .question-enunciado {
+      font-size: .9375rem; line-height: 1.65; margin-bottom: 1.25rem; color: var(--text);
+    }
+    .question-enunciado code {
+      font-family: var(--mono); background: var(--surface2);
+      padding: .1em .4em; border-radius: 4px;
+      font-size: .875em; color: var(--accent);
+    }
+    .question-enunciado pre {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem; overflow-x: auto;
+      margin-top: .75rem; font-family: var(--mono); font-size: .875rem;
+    }
+
+    /* — tipo mc — */
+    .options-grid { display: flex; flex-direction: column; gap: .5rem; }
+    .option-btn {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      cursor: pointer; color: var(--text);
+      font-family: var(--font); font-size: .9375rem;
+      text-align: left; transition: all .15s;
+    }
+    .option-btn:hover  { border-color: var(--primary); background: rgba(99,102,241,.08); }
+    .option-btn.selected { border-color: var(--primary); background: rgba(99,102,241,.15); }
+    .option-letter {
+      width: 28px; height: 28px; min-width: 28px; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .8125rem; transition: all .15s;
+    }
+    .option-btn.selected .option-letter {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+    }
+
+    /* — tipo corta — */
+    .input-corta {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: .75rem 1rem;
+      color: var(--text); font-family: var(--mono); font-size: .9375rem;
+      outline: none; transition: border-color .2s;
+    }
+    .input-corta:focus { border-color: var(--primary); }
+
+    /* — tipo matching — */
+    .matching-instruccion {
+      font-size: .8125rem; color: var(--text-muted); margin-bottom: .75rem;
+    }
+    .matching-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+    .matching-table td {
+      padding: .5rem .75rem; vertical-align: middle;
+    }
+    .matching-table td:first-child {
+      font-family: var(--mono); font-size: .875rem; color: var(--accent);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-right: none; border-radius: 6px 0 0 6px; width: 42%;
+    }
+    .matching-table td:last-child {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-left: none; border-radius: 0 6px 6px 0; width: 58%;
+    }
+    .matching-select {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: .45rem .5rem;
+      color: var(--text); font-family: var(--font); font-size: .875rem;
+      outline: none; cursor: pointer;
+    }
+    .matching-select:focus { border-color: var(--primary); }
+
+    /* — tipo completar — */
+    .completar-wrap {
+      font-family: var(--mono); font-size: .875rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem 1.25rem;
+      line-height: 2; color: var(--text-muted);
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .input-completar {
+      display: inline-block; background: transparent;
+      border: none; border-bottom: 2px solid var(--primary);
+      color: var(--text); font-family: var(--mono); font-size: .875rem;
+      padding: 0 .35rem; outline: none;
+      min-width: 80px; max-width: 240px;
+    }
+
+    /* — tipo ordenar — */
+    .ordenar-instruccion {
+      font-size: .8125rem; color: var(--text-muted); margin-bottom: .75rem;
+    }
+    .ordenar-list { display: flex; flex-direction: column; gap: .5rem; }
+    .ordenar-item {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .65rem 1rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .ordenar-num {
+      width: 24px; height: 24px; min-width: 24px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+    }
+    .ordenar-text {
+      flex: 1; font-size: .875rem; font-family: var(--mono); color: var(--text);
+    }
+    .ordenar-btns { display: flex; flex-direction: column; gap: .2rem; }
+    .btn-move {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text-muted);
+      cursor: pointer; padding: .1rem .4rem;
+      font-size: .75rem; line-height: 1; transition: all .15s;
+    }
+    .btn-move:hover:not(:disabled) { background: var(--border); color: var(--text); }
+    .btn-move:disabled { opacity: .2; cursor: not-allowed; }
+
+    /* — tipo error — */
+    .error-instruccion {
+      font-size: .8125rem; color: var(--text-muted); margin-bottom: .75rem;
+    }
+    .error-lineas { display: flex; flex-direction: column; gap: .3rem; }
+    .error-linea-btn {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .5rem .75rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; font-family: var(--mono); font-size: .8125rem;
+      color: var(--text); text-align: left; transition: all .15s;
+    }
+    .error-linea-btn:hover   { border-color: var(--danger); background: rgba(239,68,68,.05); }
+    .error-linea-btn.selected{ border-color: var(--danger); background: rgba(239,68,68,.15); color: var(--danger); }
+    .error-linea-num {
+      width: 22px; min-width: 22px; text-align: right;
+      font-size: .75rem; color: var(--text-muted);
+    }
+    .error-linea-btn.selected .error-linea-num { color: var(--danger); }
+
+    /* ══════════════════════════════════════════════
+       DOTS NAVIGATOR + NAV BUTTONS (sticky bottom)
+    ══════════════════════════════════════════════ */
+    .dots-nav-wrap {
+      padding: .875rem 1.25rem; background: var(--surface);
+      border-top: 1px solid var(--border); position: sticky; bottom: 0;
+    }
+    .dots-nav {
+      display: flex; gap: .35rem; flex-wrap: wrap;
+      justify-content: center; margin-bottom: .65rem;
+    }
+    .dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--border); background: var(--surface2);
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: .6875rem; font-weight: 700;
+      color: var(--text-muted); transition: all .15s;
+    }
+    .dot:hover:not(.locked) { border-color: var(--primary); }
+    .dot.current  { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .dot.answered { border-color: var(--success); background: rgba(16,185,129,.15); color: var(--success); }
+    .dot.answered.current { background: var(--success); color: #fff; border-color: var(--success); }
+    .dot.locked   { opacity: .25; pointer-events: none; }
+    .nav-btns {
+      display: flex; gap: .75rem; justify-content: center;
+    }
+    .nav-btns .btn { min-width: 130px; width: auto; }
+
+    /* ══════════════════════════════════════════════
+       OVERLAYS
+    ══════════════════════════════════════════════ */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(9,12,20,.87); backdrop-filter: blur(4px);
+      z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .overlay.active { display: flex; }
+    .overlay-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      max-width: 440px; width: 100%; text-align: center;
+    }
+    .overlay-box h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: .75rem; }
+    .overlay-box p  {
+      color: var(--text-muted); font-size: .9375rem;
+      line-height: 1.6; margin-bottom: 1.25rem;
+    }
+    .spinner {
+      width: 40px; height: 40px; border: 3px solid var(--surface2);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin .8s linear infinite; margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .adv-counter {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(245,158,11,.15); border: 2px solid var(--warning);
+      font-size: 1.375rem; font-weight: 700; color: var(--warning); margin-bottom: 1rem;
+    }
+    .adv-counter.danger-mode {
+      background: rgba(239,68,68,.15); border-color: var(--danger); color: var(--danger);
+    }
+
+    /* ══════════════════════════════════════════════
+       SCREENS FINALES (3,4,5)
+    ══════════════════════════════════════════════ */
+    .final-screen {
+      max-width: 540px; margin: 0 auto;
+      padding: 3rem 1.5rem; text-align: center;
+    }
+    .final-icon { font-size: 4rem; margin-bottom: 1.5rem; }
+    .final-screen h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .75rem; }
+    .final-screen p  { color: var(--text-muted); font-size: .9375rem; line-height: 1.6; margin-bottom: 1rem; }
+    .final-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem; text-align: left;
+    }
+    .final-card-row {
+      display: flex; justify-content: space-between;
+      padding: .5rem 0; border-bottom: 1px solid var(--border); font-size: .875rem;
+    }
+    .final-card-row:last-child { border-bottom: none; }
+    .final-card-row .label { color: var(--text-muted); }
+    .final-card-row .value { font-weight: 600; }
+
+    /* ══════════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .registro-container, .exam-body, .final-screen { padding: 1rem; }
+      .exam-header-top { flex-direction: column; align-items: flex-start; }
+      .nav-btns .btn { min-width: 100px; font-size: .875rem; padding: .6rem .9rem; }
+      .dot { width: 24px; height: 24px; font-size: .625rem; }
+      .question-card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1 – REGISTRO
+═══════════════════════════════════════════════════════ -->
+<div id="screen-registro" class="screen active">
+  <div class="registro-container">
+
+    <div class="registro-header">
+      <span class="badge-curso">CIIN1277P · UPN Norte</span>
+      <h1>Introducción a Ingeniería de<br>Sistemas Computacionales</h1>
+      <p>Evaluación de Competencias · Temas 4 – 19</p>
+      <p style="margin-top:.25rem;font-size:.8rem;">Docente: Ing. Danny Herrera Nájar</p>
+    </div>
+
+    <div class="info-badges">
+      <div class="info-badge">📝 <span class="val">20</span> preguntas</div>
+      <div class="info-badge">⏱ <span class="val">45</span> minutos</div>
+      <div class="info-badge">💻 <span class="val">C# / Python</span></div>
+      <div class="info-badge">⚠️ <span class="val">3</span> advertencias</div>
+    </div>
+
+    <div class="card">
+      <!-- Selector de lenguaje -->
+      <div class="lang-selector">
+        <label>1. Selecciona tu lenguaje de programación</label>
+        <div class="lang-cards">
+          <div class="lang-card" id="card-cs" onclick="selectLang('CS')">
+            <div class="lang-icon">💠</div>
+            <div class="lang-name">C#</div>
+            <div class="lang-sub">Visual Studio / .NET</div>
+          </div>
+          <div class="lang-card" id="card-py" onclick="selectLang('PY')">
+            <div class="lang-icon">🐍</div>
+            <div class="lang-name">Python</div>
+            <div class="lang-sub">Python 3.x</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos del estudiante -->
+      <div style="margin-top:1.5rem">
+        <span class="section-label">2. Ingresa tus datos</span>
+        <div class="form-group">
+          <label for="inp-nombres">Nombre(s)</label>
+          <input type="text" id="inp-nombres" placeholder="Ej. María Alejandra" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="inp-apellidos">Apellidos</label>
+          <input type="text" id="inp-apellidos" placeholder="Ej. García López" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="inp-codigo">Código de estudiante</label>
+          <input type="text" id="inp-codigo" placeholder="Ej. U20230042" autocomplete="off">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-inicio" onclick="iniciarRegistro()">
+        Iniciar evaluación →
+      </button>
+    </div>
+
+    <p style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:.5rem;">
+      Una vez iniciado el examen no podrás cambiar de lenguaje ni salir sin penalización.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2 – EXAMEN
+═══════════════════════════════════════════════════════ -->
+<div id="screen-examen" class="screen">
+
+  <header class="exam-header">
+    <div class="exam-header-top">
+      <div class="exam-student-info">
+        <span class="student-name" id="hdr-nombre">—</span>
+        <span class="student-code" id="hdr-codigo">—</span>
+        <span class="lang-badge"   id="hdr-lang">—</span>
+      </div>
+      <div class="exam-stats">
+        <span class="answered-count"><span id="hdr-respondidas">0</span>/20 respondidas</span>
+        <div class="timer" id="timer">45:00</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    </div>
+  </header>
+
+  <div class="exam-body">
+    <div id="question-container"></div>
+  </div>
+
+  <div class="dots-nav-wrap">
+    <div class="dots-nav" id="dots-nav"></div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" id="btn-prev" onclick="navegarPrev()" style="display:none">← Anterior</button>
+      <button class="btn btn-primary"   id="btn-next" onclick="navegarNext()" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 3 – CONFIRMACIÓN
+═══════════════════════════════════════════════════════ -->
+<div id="screen-confirmacion" class="screen">
+  <div class="final-screen">
+    <div class="final-icon">✅</div>
+    <h1 style="color:var(--success)">¡Evaluación enviada!</h1>
+    <p>Tus respuestas han sido registradas. El docente procesará los resultados pronto.</p>
+    <div class="final-card" id="resumen-confirmacion"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 4 – TERMINADO POR INFRACCIONES
+═══════════════════════════════════════════════════════ -->
+<div id="screen-terminado" class="screen">
+  <div class="final-screen">
+    <div class="final-icon">🚫</div>
+    <h1 style="color:var(--danger)">Evaluación finalizada</h1>
+    <p>Se detectaron <strong>3 infracciones</strong> (cambios de pantalla o pérdida de foco). Tu evaluación ha sido marcada como <strong>INFRACCIÓN</strong> y notificada al docente.</p>
+    <div class="final-card">
+      <div class="final-card-row">
+        <span class="label">Estado</span>
+        <span class="value" style="color:var(--danger)">INFRACCIÓN REGISTRADA</span>
+      </div>
+      <div class="final-card-row">
+        <span class="label">Preguntas respondidas</span>
+        <span class="value" id="term-respondidas">—</span>
+      </div>
+      <div class="final-card-row">
+        <span class="label">Acción recomendada</span>
+        <span class="value">Contacta al docente</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 5 – BLOQUEADO
+═══════════════════════════════════════════════════════ -->
+<div id="screen-bloqueado" class="screen">
+  <div class="final-screen">
+    <div class="final-icon">🔒</div>
+    <h1 style="color:var(--warning)">Acceso bloqueado</h1>
+    <p>Este código de estudiante ya tiene una evaluación registrada. No es posible volver a rendir el examen.</p>
+    <p>Si crees que es un error, comunícate con: <strong>Ing. Danny Herrera Nájar</strong>.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     OVERLAY – ENVIANDO
+═══════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay-sending">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <h2>Enviando respuestas…</h2>
+    <p>Por favor espera. No cierres ni recargues la página.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     OVERLAY – ADVERTENCIA
+═══════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay-advertencia">
+  <div class="overlay-box">
+    <div class="adv-counter" id="adv-num">1</div>
+    <h2 id="adv-titulo">⚠️ Advertencia de salida</h2>
+    <p id="adv-texto"></p>
+    <button class="btn btn-primary" style="width:auto;padding:.75rem 2rem" onclick="cerrarAdvertencia()">
+      Regresar al examen
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  ⬇️  PROFESOR: reemplaza esta URL con la de tu      ║
+// ║      Apps Script desplegado como Web App            ║
+// ╚══════════════════════════════════════════════════════╝
+const EVAL_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwTCDrN7Qvu_k9Vqye_MePPBoc7rGDVNiFaWdsgmJqdW94v3UYVq9aEq81xpBPMYqCHVQ/exec';
+
+// ══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════
+let studentData       = {};
+let selectedLanguage  = '';
+let activeQuestions   = [];
+let answers           = {};
+let currentQ          = 0;
+let maxReached        = 0;
+let timerInterval     = null;
+let secondsLeft       = 45 * 60;
+let submitted         = false;
+let advertencias      = 0;
+let advertenciaActiva = false;
+let enExamen          = false;
+let ordenTouched      = {};
+
+// ══════════════════════════════════════════════════════
+// ▼▼▼  BANCOS DE PREGUNTAS  ▼▼▼
+// (Los IDs NO contienen respuestas correctas;
+//  éstas viven únicamente en el Apps Script)
+// ══════════════════════════════════════════════════════
+
+// ── RECORDAR ─────────────────────────────────────────
+const BANCO_CS_RECORDAR = [
+  { id:'rec_cs_001', bloom:'recordar', nivel:'basico', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Cuál instrucción de C# muestra texto en consola <strong>con salto de línea</strong> al final?',
+    opciones:{ A:'<code>Console.Write()</code>', B:'<code>Console.Print()</code>', C:'<code>Console.WriteLine()</code>', D:'<code>print()</code>' }
+  },
+  { id:'rec_cs_002', bloom:'recordar', nivel:'basico', tema:'Variables', tipo:'mc',
+    enunciado:'¿Cuál es la forma correcta de declarar una variable entera en C#?',
+    opciones:{ A:'<code>integer x = 5;</code>', B:'<code>int x = 5;</code>', C:'<code>var x: int = 5;</code>', D:'<code>x = int(5);</code>' }
+  },
+  { id:'rec_cs_003', bloom:'recordar', nivel:'basico', tema:'Variables y constantes', tipo:'mc',
+    enunciado:'¿Qué palabra clave se usa para declarar una <strong>constante</strong> en C#?',
+    opciones:{ A:'<code>final</code>', B:'<code>const</code>', C:'<code>static</code>', D:'<code>readonly</code>' }
+  },
+  { id:'rec_cs_004', bloom:'recordar', nivel:'basico', tema:'Entrada de datos', tipo:'mc',
+    enunciado:'¿Qué método se usa para leer la entrada del usuario desde el teclado en C#?',
+    opciones:{ A:'<code>Console.Read()</code>', B:'<code>Console.ReadLine()</code>', C:'<code>input()</code>', D:'<code>scanf()</code>' }
+  },
+  { id:'rec_cs_005', bloom:'recordar', nivel:'basico', tema:'Tipos de datos', tipo:'corta',
+    enunciado:'¿Cómo se escribe el valor booleano <strong>verdadero</strong> en C#? (escribe exactamente la palabra clave)',
+    placeholder:'Ej. false'
+  },
+  { id:'rec_cs_006', bloom:'recordar', nivel:'basico', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'¿Cuál es el operador de <strong>módulo (residuo)</strong> en C#?',
+    opciones:{ A:'<code>mod</code>', B:'<code>//</code>', C:'<code>rem</code>', D:'<code>%</code>' }
+  },
+  { id:'rec_cs_007', bloom:'recordar', nivel:'basico', tema:'Tipos de datos', tipo:'mc',
+    enunciado:'¿Cuál tipo de dato de C# almacena números decimales de <strong>doble precisión</strong>?',
+    opciones:{ A:'<code>float</code>', B:'<code>decimal</code>', C:'<code>double</code>', D:'<code>real</code>' }
+  },
+  { id:'rec_cs_008', bloom:'recordar', nivel:'basico', tema:'Operadores relacionales', tipo:'corta',
+    enunciado:'¿Cuál es el operador de <strong>igualdad</strong> (comparación) en C#? (escribe los dos símbolos)',
+    placeholder:'Ej. !='
+  },
+  { id:'rec_cs_009', bloom:'recordar', nivel:'basico', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuál es el operador lógico <strong>AND</strong> en C#?',
+    opciones:{ A:'<code>and</code>', B:'<code>&amp;</code>', C:'<code>&amp;&amp;</code>', D:'<code>||</code>' }
+  },
+  { id:'rec_cs_010', bloom:'recordar', nivel:'basico', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuál es el operador lógico <strong>OR</strong> en C#?',
+    opciones:{ A:'<code>or</code>', B:'<code>|</code>', C:'<code>&amp;&amp;</code>', D:'<code>||</code>' }
+  },
+  { id:'rec_cs_011', bloom:'recordar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'mc',
+    enunciado:'¿Cuál método convierte una cadena de texto a número entero en C#?',
+    opciones:{ A:'<code>int(x)</code>', B:'<code>toInt(x)</code>', C:'<code>int.Parse(x)</code>', D:'<code>Convert(x)</code>' }
+  },
+  { id:'rec_cs_012', bloom:'recordar', nivel:'basico', tema:'Condicional simple', tipo:'corta',
+    enunciado:'¿Cuál es la palabra clave en C# que inicia una estructura condicional? (una sola palabra)',
+    placeholder:'Ej. else'
+  }
+];
+
+const BANCO_PY_RECORDAR = [
+  { id:'rec_py_001', bloom:'recordar', nivel:'basico', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Cuál función de Python muestra texto en consola?',
+    opciones:{ A:'<code>Console.WriteLine()</code>', B:'<code>write()</code>', C:'<code>print()</code>', D:'<code>output()</code>' }
+  },
+  { id:'rec_py_002', bloom:'recordar', nivel:'basico', tema:'Entrada de datos', tipo:'mc',
+    enunciado:'¿Cuál función de Python se usa para leer datos ingresados por el usuario?',
+    opciones:{ A:'<code>readline()</code>', B:'<code>input()</code>', C:'<code>scan()</code>', D:'<code>read()</code>' }
+  },
+  { id:'rec_py_003', bloom:'recordar', nivel:'basico', tema:'Tipos de datos', tipo:'corta',
+    enunciado:'¿Cómo se escribe el valor booleano <strong>verdadero</strong> en Python? (con la mayúscula correcta)',
+    placeholder:'Ej. False'
+  },
+  { id:'rec_py_004', bloom:'recordar', nivel:'basico', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'¿Cuál es el operador de <strong>potencia</strong> en Python?',
+    opciones:{ A:'<code>^</code>', B:'<code>pow</code>', C:'<code>**</code>', D:'<code>^^</code>' }
+  },
+  { id:'rec_py_005', bloom:'recordar', nivel:'basico', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'¿Cuál es el operador de <strong>división entera</strong> en Python?',
+    opciones:{ A:'<code>/</code>', B:'<code>div</code>', C:'<code>//</code>', D:'<code>%</code>' }
+  },
+  { id:'rec_py_006', bloom:'recordar', nivel:'basico', tema:'Operadores aritméticos', tipo:'corta',
+    enunciado:'¿Cuál símbolo representa el operador de <strong>módulo (residuo)</strong> en Python?',
+    placeholder:'Ej. //'
+  },
+  { id:'rec_py_007', bloom:'recordar', nivel:'basico', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cómo se escribe el operador lógico <strong>AND</strong> en Python?',
+    opciones:{ A:'<code>&amp;&amp;</code>', B:'<code>and</code>', C:'<code>&amp;</code>', D:'<code>AND</code>' }
+  },
+  { id:'rec_py_008', bloom:'recordar', nivel:'basico', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cómo se escribe el operador lógico <strong>OR</strong> en Python?',
+    opciones:{ A:'<code>||</code>', B:'<code>OR</code>', C:'<code>or</code>', D:'<code>|</code>' }
+  },
+  { id:'rec_py_009', bloom:'recordar', nivel:'basico', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'¿Cuál palabra clave se usa en Python para la <strong>condición alternativa encadenada</strong> (else-if)?',
+    opciones:{ A:'<code>else if</code>', B:'<code>elsif</code>', C:'<code>elseif</code>', D:'<code>elif</code>' }
+  },
+  { id:'rec_py_010', bloom:'recordar', nivel:'basico', tema:'Conversión de tipos', tipo:'mc',
+    enunciado:'¿Cuál función convierte un texto a número entero en Python?',
+    opciones:{ A:'<code>toInt()</code>', B:'<code>integer()</code>', C:'<code>int()</code>', D:'<code>parse()</code>' }
+  },
+  { id:'rec_py_011', bloom:'recordar', nivel:'basico', tema:'Tipos de datos', tipo:'corta',
+    enunciado:'¿Cuál es el nombre del tipo de dato para cadenas de texto en Python? (abreviatura de tres letras)',
+    placeholder:'Ej. int'
+  },
+  { id:'rec_py_012', bloom:'recordar', nivel:'basico', tema:'Conversión de tipos', tipo:'mc',
+    enunciado:'¿Cuál función convierte un número entero a cadena de texto en Python?',
+    opciones:{ A:'<code>string()</code>', B:'<code>str()</code>', C:'<code>text()</code>', D:'<code>toString()</code>' }
+  }
+];
+
+// ── COMPRENDER ────────────────────────────────────────
+const BANCO_CS_COMPRENDER = [
+  { id:'com_cs_001', bloom:'comprender', nivel:'basico', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Cuál es la diferencia entre <code>Console.Write()</code> y <code>Console.WriteLine()</code> en C#?',
+    opciones:{
+      A:'<code>Write</code> muestra en rojo y <code>WriteLine</code> en verde',
+      B:'<code>Write</code> no agrega salto de línea al final; <code>WriteLine</code> sí lo agrega',
+      C:'<code>Write</code> solo acepta números; <code>WriteLine</code> solo acepta texto',
+      D:'No hay diferencia, son idénticos'
+    }
+  },
+  { id:'com_cs_002', bloom:'comprender', nivel:'basico', tema:'Operadores de asignación', tipo:'mc',
+    enunciado:'Si <code>int x = 10;</code>, ¿cuál es el valor de <code>x</code> después de ejecutar <code>x += 5;</code>?',
+    opciones:{ A:'5', B:'10', C:'15', D:'50' }
+  },
+  { id:'com_cs_003', bloom:'comprender', nivel:'basico', tema:'Tipos de datos', tipo:'matching',
+    instruccion:'Relaciona cada tipo de dato de C# con un ejemplo de valor que puede almacenar:',
+    pares:[
+      { izq:'<code>int</code>',    der:'42' },
+      { izq:'<code>double</code>', der:'3.1416' },
+      { izq:'<code>string</code>', der:'"Hola Mundo"' },
+      { izq:'<code>bool</code>',   der:'true' }
+    ]
+  },
+  { id:'com_cs_004', bloom:'comprender', nivel:'basico', tema:'Variables', tipo:'mc',
+    enunciado:'¿Qué es una variable en programación?',
+    opciones:{
+      A:'Un valor que nunca cambia durante la ejecución',
+      B:'Un espacio en memoria con nombre donde se almacena un dato que puede cambiar',
+      C:'Una instrucción que muestra datos en pantalla',
+      D:'Un tipo de operador matemático'
+    }
+  },
+  { id:'com_cs_005', bloom:'comprender', nivel:'intermedio', tema:'Conversión de tipos', tipo:'mc',
+    enunciado:'¿Qué ocurre si ejecutas <code>int.Parse("abc")</code> en C#?',
+    opciones:{
+      A:'Devuelve 0',
+      B:'Devuelve null',
+      C:'Lanza una excepción <code>FormatException</code>',
+      D:'Convierte las letras a sus códigos ASCII'
+    }
+  },
+  { id:'com_cs_006', bloom:'comprender', nivel:'basico', tema:'Operadores aritméticos', tipo:'corta',
+    enunciado:'¿Cuál es el resultado de la expresión <code>10 % 3</code> en C#?',
+    placeholder:'Ej. 5'
+  },
+  { id:'com_cs_007', bloom:'comprender', nivel:'basico', tema:'Operadores relacionales', tipo:'mc',
+    enunciado:'¿Cuál es la diferencia entre el operador <code>=</code> y el operador <code>==</code> en C#?',
+    opciones:{
+      A:'Son idénticos, solo cambia la cantidad de símbolos',
+      B:'<code>=</code> asigna un valor a una variable; <code>==</code> compara si dos valores son iguales',
+      C:'<code>=</code> compara; <code>==</code> asigna',
+      D:'<code>==</code> solo funciona con números'
+    }
+  },
+  { id:'com_cs_008', bloom:'comprender', nivel:'basico', tema:'Valores booleanos', tipo:'mc',
+    enunciado:'¿Qué tipo de resultado devuelve una expresión relacional como <code>5 &gt; 3</code> en C#?',
+    opciones:{ A:'Un número entero', B:'Una cadena de texto', C:'Un valor booleano (<code>true</code> o <code>false</code>)', D:'Un número decimal' }
+  },
+  { id:'com_cs_009', bloom:'comprender', nivel:'intermedio', tema:'Condicional simple', tipo:'mc',
+    enunciado:'¿Qué hace la siguiente instrucción de C#?<br><pre>if (edad >= 18)\n    Console.WriteLine("Mayor de edad");</pre>',
+    opciones:{
+      A:'Siempre muestra "Mayor de edad"',
+      B:'Muestra "Mayor de edad" solo si la variable <code>edad</code> es mayor o igual a 18',
+      C:'Asigna 18 a la variable <code>edad</code>',
+      D:'Muestra "Mayor de edad" solo si <code>edad</code> es exactamente 18'
+    }
+  },
+  { id:'com_cs_010', bloom:'comprender', nivel:'intermedio', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuándo es verdadera la expresión <code>(a &gt; 0 &amp;&amp; b &gt; 0)</code> en C#?',
+    opciones:{
+      A:'Cuando al menos uno de los dos es mayor que 0',
+      B:'Solo cuando los dos son exactamente iguales',
+      C:'Solo cuando los dos son mayores que 0 al mismo tiempo',
+      D:'Cuando ninguno es mayor que 0'
+    }
+  },
+  { id:'com_cs_011', bloom:'comprender', nivel:'intermedio', tema:'Condicional doble', tipo:'mc',
+    enunciado:'¿Cuál bloque se ejecuta cuando la condición de un <code>if-else</code> es <strong>falsa</strong>?',
+    opciones:{ A:'El bloque del <code>if</code>', B:'Ninguno', C:'Ambos bloques', D:'El bloque del <code>else</code>' }
+  },
+  { id:'com_cs_012', bloom:'comprender', nivel:'basico', tema:'Operadores de asignación', tipo:'matching',
+    instruccion:'Relaciona cada operador de asignación de C# con su descripción:',
+    pares:[
+      { izq:'<code>+=</code>', der:'Suma y asigna el resultado a la variable' },
+      { izq:'<code>-=</code>', der:'Resta y asigna el resultado a la variable' },
+      { izq:'<code>*=</code>', der:'Multiplica y asigna el resultado a la variable' },
+      { izq:'<code>%=</code>', der:'Calcula el módulo y asigna el resultado' }
+    ]
+  },
+  { id:'com_cs_013', bloom:'comprender', nivel:'basico', tema:'Entrada de datos', tipo:'mc',
+    enunciado:'¿Qué tipo de dato devuelve siempre <code>Console.ReadLine()</code> en C#?',
+    opciones:{ A:'<code>int</code>', B:'<code>double</code>', C:'<code>string</code>', D:'<code>bool</code>' }
+  },
+  { id:'com_cs_014', bloom:'comprender', nivel:'intermedio', tema:'Jerarquía de operadores', tipo:'mc',
+    enunciado:'¿Cuál es el resultado de la expresión <code>2 + 3 * 4</code> en C#?',
+    opciones:{ A:'20', B:'14', C:'24', D:'12' }
+  },
+  { id:'com_cs_015', bloom:'comprender', nivel:'intermedio', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'¿Cuál es la ventaja de usar <code>else if</code> en lugar de múltiples <code>if</code> independientes?',
+    opciones:{
+      A:'No hay diferencia, ambos funcionan igual',
+      B:'Con <code>else if</code> solo se evalúa la siguiente condición si la anterior fue falsa, lo que es más eficiente',
+      C:'<code>else if</code> permite usar variables que <code>if</code> no admite',
+      D:'<code>else if</code> es más lento pero más seguro'
+    }
+  }
+];
+
+const BANCO_PY_COMPRENDER = [
+  { id:'com_py_001', bloom:'comprender', nivel:'basico', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Qué hace <code>print("Hola", "Mundo")</code> en Python?',
+    opciones:{
+      A:'Genera un error porque print solo acepta un argumento',
+      B:'Muestra <code>HolaMundo</code> sin espacio',
+      C:'Muestra <code>Hola Mundo</code> separado por un espacio',
+      D:'Muestra <code>Hola,Mundo</code> separado por coma'
+    }
+  },
+  { id:'com_py_002', bloom:'comprender', nivel:'basico', tema:'Variables', tipo:'mc',
+    enunciado:'¿Qué característica de Python diferencia la declaración de variables respecto a C#?',
+    opciones:{
+      A:'En Python siempre debes declarar el tipo antes del nombre',
+      B:'En Python no se declara el tipo; este se infiere automáticamente al asignar el valor',
+      C:'En Python las variables son siempre de tipo <code>str</code>',
+      D:'En Python debes usar la palabra <code>var</code> para declarar variables'
+    }
+  },
+  { id:'com_py_003', bloom:'comprender', nivel:'basico', tema:'Tipos de datos', tipo:'matching',
+    instruccion:'Relaciona cada tipo de dato de Python con un ejemplo de valor que puede almacenar:',
+    pares:[
+      { izq:'<code>int</code>',   der:'100' },
+      { izq:'<code>float</code>', der:'2.718' },
+      { izq:'<code>str</code>',   der:'"Python"' },
+      { izq:'<code>bool</code>',  der:'False' }
+    ]
+  },
+  { id:'com_py_004', bloom:'comprender', nivel:'basico', tema:'Entrada de datos', tipo:'mc',
+    enunciado:'¿Qué tipo de dato devuelve siempre <code>input()</code> en Python, incluso si el usuario escribe un número?',
+    opciones:{ A:'<code>int</code>', B:'<code>float</code>', C:'<code>str</code>', D:'El tipo depende de lo que escriba el usuario' }
+  },
+  { id:'com_py_005', bloom:'comprender', nivel:'intermedio', tema:'Conversión de tipos', tipo:'mc',
+    enunciado:'¿Por qué es necesario usar <code>int(input())</code> en lugar de solo <code>input()</code> para leer un número entero en Python?',
+    opciones:{
+      A:'Porque <code>input()</code> devuelve un <code>str</code> y no se puede operar aritméticamente con texto',
+      B:'Porque <code>input()</code> está desactualizado en Python 3',
+      C:'No es necesario, Python lo convierte automáticamente',
+      D:'Porque <code>input()</code> devuelve un <code>float</code>'
+    }
+  },
+  { id:'com_py_006', bloom:'comprender', nivel:'basico', tema:'Operadores aritméticos', tipo:'corta',
+    enunciado:'¿Cuál es el resultado de <code>17 % 5</code> en Python?',
+    placeholder:'Ej. 3'
+  },
+  { id:'com_py_007', bloom:'comprender', nivel:'basico', tema:'Operadores relacionales', tipo:'mc',
+    enunciado:'¿Qué valor booleano devuelve <code>10 == 10.0</code> en Python?',
+    opciones:{ A:'<code>False</code>, porque son tipos distintos', B:'<code>True</code>, porque sus valores son iguales', C:'Un error de tipo', D:'<code>None</code>' }
+  },
+  { id:'com_py_008', bloom:'comprender', nivel:'intermedio', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuándo es verdadera la expresión <code>(x &gt; 0 or y &gt; 0)</code> en Python?',
+    opciones:{
+      A:'Solo cuando los dos son mayores que 0',
+      B:'Cuando al menos uno de los dos es mayor que 0',
+      C:'Solo cuando <code>x</code> es mayor que 0',
+      D:'Solo cuando <code>y</code> es mayor que 0'
+    }
+  },
+  { id:'com_py_009', bloom:'comprender', nivel:'basico', tema:'Condicional simple', tipo:'mc',
+    enunciado:'¿Qué hace Python para indicar qué instrucciones pertenecen al bloque de un <code>if</code>?',
+    opciones:{
+      A:'Usa llaves <code>{}</code> como delimitadores',
+      B:'Usa la palabra <code>begin</code> y <code>end</code>',
+      C:'Usa <strong>indentación (sangría)</strong> consistente',
+      D:'Usa paréntesis <code>()</code>'
+    }
+  },
+  { id:'com_py_010', bloom:'comprender', nivel:'intermedio', tema:'Condicional doble', tipo:'mc',
+    enunciado:'¿Qué muestra el siguiente código si <code>nota = 55</code>?<br><pre>if nota >= 60:\n    print("Aprobado")\nelse:\n    print("Desaprobado")</pre>',
+    opciones:{ A:'"Aprobado"', B:'"Desaprobado"', C:'Nada', D:'Un error' }
+  },
+  { id:'com_py_011', bloom:'comprender', nivel:'basico', tema:'Operadores de asignación', tipo:'mc',
+    enunciado:'Si <code>x = 8</code>, ¿cuál es el valor de <code>x</code> después de <code>x -= 3</code>?',
+    opciones:{ A:'11', B:'8', C:'5', D:'3' }
+  },
+  { id:'com_py_012', bloom:'comprender', nivel:'basico', tema:'Operadores de asignación', tipo:'matching',
+    instruccion:'Relaciona cada operador de asignación de Python con su descripción:',
+    pares:[
+      { izq:'<code>+=</code>', der:'Suma y reasigna el resultado a la variable' },
+      { izq:'<code>**=</code>', der:'Eleva a potencia y reasigna' },
+      { izq:'<code>//=</code>', der:'Divide de forma entera y reasigna' },
+      { izq:'<code>%=</code>', der:'Calcula módulo y reasigna' }
+    ]
+  },
+  { id:'com_py_013', bloom:'comprender', nivel:'basico', tema:'Jerarquía de operadores', tipo:'mc',
+    enunciado:'¿Cuál es el resultado de <code>3 + 2 ** 2</code> en Python?',
+    opciones:{ A:'25', B:'16', C:'7', D:'10' }
+  },
+  { id:'com_py_014', bloom:'comprender', nivel:'intermedio', tema:'Valores booleanos', tipo:'mc',
+    enunciado:'¿Cuál de las siguientes expresiones evalúa a <code>False</code> en Python?',
+    opciones:{ A:'<code>5 != 3</code>', B:'<code>10 >= 10</code>', C:'<code>4 &lt; 4</code>', D:'<code>True or False</code>' }
+  },
+  { id:'com_py_015', bloom:'comprender', nivel:'intermedio', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'¿Cuál es el propósito del bloque <code>elif</code> en Python?',
+    opciones:{
+      A:'Terminar el bloque <code>if</code>',
+      B:'Evaluar una condición alternativa cuando la condición anterior resultó falsa',
+      C:'Repetir el bloque <code>if</code> múltiples veces',
+      D:'Definir una función dentro de un <code>if</code>'
+    }
+  }
+];
+
+// ── APLICAR ───────────────────────────────────────────
+const BANCO_CS_APLICAR = [
+  // ── MC (6) ──────────────────────────────────────
+  { id:'apl_cs_001', bloom:'aplicar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'¿Qué muestra en consola el siguiente código de C#?<br><pre>int x = 10;\nint y = 3;\nConsole.WriteLine(x / y);</pre>',
+    opciones:{ A:'3.33', B:'3', C:'4', D:'0' }
+  },
+  { id:'apl_cs_002', bloom:'aplicar', nivel:'intermedio', tema:'Entrada y conversión', tipo:'mc',
+    enunciado:'¿Cuál es la forma <strong>correcta</strong> de leer un número entero desde el teclado en C#?',
+    opciones:{
+      A:'<code>int n = Console.ReadLine();</code>',
+      B:'<code>int n = int.Parse(Console.ReadLine());</code>',
+      C:'<code>int n = input();</code>',
+      D:'<code>int n = scan();</code>'
+    }
+  },
+  { id:'apl_cs_003', bloom:'aplicar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'Un producto cuesta S/. 120. Para calcular el precio final con <strong>18% de IGV</strong>, ¿cuál expresión en C# es correcta?',
+    opciones:{
+      A:'<code>double total = precio * 18;</code>',
+      B:'<code>double total = precio + 18;</code>',
+      C:'<code>double total = precio * 1.18;</code>',
+      D:'<code>double total = precio / 0.18;</code>'
+    }
+  },
+  { id:'apl_cs_004', bloom:'aplicar', nivel:'intermedio', tema:'Condicional doble', tipo:'mc',
+    enunciado:'¿Qué muestra el siguiente código si <code>n = 7</code>?<br><pre>if (n % 2 == 0)\n    Console.WriteLine("Par");\nelse\n    Console.WriteLine("Impar");</pre>',
+    opciones:{ A:'"Par"', B:'"Impar"', C:'Nada, no entra a ningún bloque', D:'Un error de compilación' }
+  },
+  { id:'apl_cs_005', bloom:'aplicar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'Un alumno obtuvo <code>nota = 65</code>. ¿Cuál bloque produce la salida <code>"Regular"</code>?',
+    opciones:{
+      A:'<code>if(nota&gt;=70) Write("A"); else if(nota&gt;=60) Write("Regular"); else Write("C");</code>',
+      B:'<code>if(nota&gt;=60) Write("A"); else if(nota&gt;=70) Write("Regular"); else Write("C");</code>',
+      C:'<code>if(nota==65) Write("Regular");</code>',
+      D:'<code>if(nota&gt;70) Write("A"); else if(nota&gt;60) Write("Regular"); else Write("C");</code>'
+    }
+  },
+  { id:'apl_cs_006', bloom:'aplicar', nivel:'intermedio', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Cuál instrucción muestra correctamente <code>Precio: S/. 29.99</code> usando interpolación de cadena en C#?',
+    opciones:{
+      A:'<code>Console.WriteLine("Precio: S/. " + precio);</code>',
+      B:'<code>Console.WriteLine($"Precio: S/. {precio}");</code>',
+      C:'<code>Console.WriteLine(f"Precio: S/. {precio}");</code>',
+      D:'<code>Console.WriteLine("Precio: S/. %f" % precio);</code>'
+    }
+  },
+
+  // ── COMPLETAR (6) ────────────────────────────────
+  { id:'apl_cs_007', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'completar',
+    enunciado:'Completa el <strong>método</strong> de la clase <code>int</code> para convertir el texto a número entero:',
+    codigoAntes:'string texto = Console.ReadLine();\nint numero = int.',
+    codigoDespues:'(texto);\nConsole.WriteLine(numero * 2);',
+    placeholder:'método'
+  },
+  { id:'apl_cs_008', bloom:'aplicar', nivel:'intermedio', tema:'Salida de datos', tipo:'completar',
+    enunciado:'Completa el <strong>prefijo</strong> necesario para que funcione la interpolación de cadena:',
+    codigoAntes:'string nombre = "Luis";\nint edad = 20;\nConsole.WriteLine(',
+    codigoDespues:'"Hola {nombre}, tienes {edad} años");',
+    placeholder:'prefijo ($)'
+  },
+  { id:'apl_cs_009', bloom:'aplicar', nivel:'intermedio', tema:'Condicional simple', tipo:'completar',
+    enunciado:'Completa el <strong>operador relacional</strong> para que el mensaje se muestre cuando la edad sea mayor o igual a 18:',
+    codigoAntes:'int edad = 20;\nif (edad ',
+    codigoDespues:' 18)\n    Console.WriteLine("Mayor de edad");',
+    placeholder:'operador'
+  },
+  { id:'apl_cs_010', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'completar',
+    enunciado:'Completa el <strong>método</strong> de la clase <code>Convert</code> para leer un número entero:',
+    codigoAntes:'Console.Write("Ingresa tu edad: ");\nint edad = Convert.',
+    codigoDespues:'(Console.ReadLine());\nConsole.WriteLine("Tu edad es: " + edad);',
+    placeholder:'método'
+  },
+  { id:'apl_cs_011', bloom:'aplicar', nivel:'intermedio', tema:'Condicional doble', tipo:'completar',
+    enunciado:'Completa la <strong>palabra clave</strong> para el bloque alternativo del condicional:',
+    codigoAntes:'int nota = 55;\nif (nota >= 60)\n    Console.WriteLine("Aprobado");\n',
+    codigoDespues:'\n    Console.WriteLine("Desaprobado");',
+    placeholder:'palabra clave'
+  },
+  { id:'apl_cs_012', bloom:'aplicar', nivel:'avanzado', tema:'Jerarquía de operadores', tipo:'completar',
+    enunciado:'Completa la <strong>expresión entre paréntesis</strong> para calcular el promedio correctamente:',
+    codigoAntes:'double n1=14, n2=16, n3=18;\ndouble promedio = ',
+    codigoDespues:' / 3;\nConsole.WriteLine("Promedio: " + promedio);',
+    placeholder:'(n1 + n2 + ...)'
+  },
+
+  // ── ERROR (6) ────────────────────────────────────
+  { id:'apl_cs_013', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'error',
+    enunciado:'¿En qué línea hay un error que impide la compilación?',
+    instruccion:'¿En qué línea hay un error que impide la compilación?',
+    lineas:[
+      'string entrada = Console.ReadLine();',
+      'int numero = entrada;',
+      'Console.WriteLine(numero + 5);'
+    ]
+  },
+  { id:'apl_cs_014', bloom:'aplicar', nivel:'intermedio', tema:'Condicional simple', tipo:'error',
+    enunciado:'¿En qué línea hay un error de sintaxis en el condicional?',
+    instruccion:'¿En qué línea hay un error de sintaxis en el condicional?',
+    lineas:[
+      'int x = 10;',
+      'if (x = 10)',
+      '    Console.WriteLine("Es diez");'
+    ]
+  },
+  { id:'apl_cs_015', bloom:'aplicar', nivel:'basico', tema:'Salida de datos', tipo:'error',
+    enunciado:'¿En qué línea hay un error que produce fallo al ejecutar?',
+    instruccion:'¿En qué línea hay un error que produce fallo al ejecutar?',
+    lineas:[
+      'int resultado = 5 * 3;',
+      'Consola.WriteLine(resultado);',
+      '// Fin del programa'
+    ]
+  },
+  { id:'apl_cs_016', bloom:'aplicar', nivel:'basico', tema:'Variables', tipo:'error',
+    enunciado:'¿En qué línea falta el punto y coma que causa error de compilación?',
+    instruccion:'¿En qué línea falta el punto y coma que causa error de compilación?',
+    lineas:[
+      'int x = 5',
+      'int y = 10;',
+      'Console.WriteLine(x + y);'
+    ]
+  },
+  { id:'apl_cs_017', bloom:'aplicar', nivel:'intermedio', tema:'Condicional múltiple', tipo:'error',
+    enunciado:'¿En qué línea hay un error de sintaxis en el bloque condicional?',
+    instruccion:'¿En qué línea hay un error de sintaxis en el bloque condicional?',
+    lineas:[
+      'int nota = 75;',
+      'if (nota >= 70) Console.WriteLine("Aprobado");',
+      'elseif (nota >= 60) Console.WriteLine("Regular");',
+      'else Console.WriteLine("Desaprobado");'
+    ]
+  },
+  { id:'apl_cs_018', bloom:'aplicar', nivel:'intermedio', tema:'Tipos de datos', tipo:'error',
+    enunciado:'¿En qué línea hay un error de tipo que impide la compilación?',
+    instruccion:'¿En qué línea hay un error de tipo que impide la compilación?',
+    lineas:[
+      'int precio = 29.99;',
+      'double igv = precio * 0.18;',
+      'Console.WriteLine("IGV: " + igv);'
+    ]
+  }
+];
+
+const BANCO_PY_APLICAR = [
+  // ── MC (6) ──────────────────────────────────────
+  { id:'apl_py_001', bloom:'aplicar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'¿Qué muestra en consola el siguiente código de Python?<br><pre>x = 10\ny = 3\nprint(x // y)</pre>',
+    opciones:{ A:'3.33', B:'3', C:'4', D:'1' }
+  },
+  { id:'apl_py_002', bloom:'aplicar', nivel:'intermedio', tema:'Entrada y conversión', tipo:'mc',
+    enunciado:'¿Cuál es la forma <strong>correcta</strong> de leer un número entero desde el teclado en Python?',
+    opciones:{
+      A:'<code>n = input()</code>',
+      B:'<code>n = int(Console.ReadLine())</code>',
+      C:'<code>n = int(input())</code>',
+      D:'<code>n = read(int)</code>'
+    }
+  },
+  { id:'apl_py_003', bloom:'aplicar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'mc',
+    enunciado:'Un producto cuesta S/. 80. Para calcular el precio final con <strong>18% de IGV</strong>, ¿cuál expresión en Python es correcta?',
+    opciones:{
+      A:'<code>total = precio * 18</code>',
+      B:'<code>total = precio + 18</code>',
+      C:'<code>total = precio * 1.18</code>',
+      D:'<code>total = precio / 0.18</code>'
+    }
+  },
+  { id:'apl_py_004', bloom:'aplicar', nivel:'intermedio', tema:'Condicional doble', tipo:'mc',
+    enunciado:'¿Qué muestra el siguiente código si <code>n = 9</code>?<br><pre>if n % 2 == 0:\n    print("Par")\nelse:\n    print("Impar")</pre>',
+    opciones:{ A:'"Par"', B:'"Impar"', C:'Nada', D:'Un error' }
+  },
+  { id:'apl_py_005', bloom:'aplicar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'Un alumno obtuvo <code>nota = 72</code>. ¿Cuál bloque produce la salida <code>"Aprobado"</code>?',
+    opciones:{
+      A:'<code>if nota&gt;=70: print("Aprobado")\nelif nota&gt;=60: print("Regular")\nelse: print("Desaprobado")</code>',
+      B:'<code>if nota&gt;=60: print("Aprobado")\nelif nota&gt;=70: print("Regular")\nelse: print("Desaprobado")</code>',
+      C:'<code>if nota==72: print("Aprobado")</code>',
+      D:'<code>if nota&gt;75: print("Aprobado")\nelse: print("Regular")</code>'
+    }
+  },
+  { id:'apl_py_006', bloom:'aplicar', nivel:'intermedio', tema:'Salida de datos', tipo:'mc',
+    enunciado:'¿Cuál instrucción muestra correctamente <code>Hola Ana, tienes 20 años</code> en Python usando f-string?',
+    opciones:{
+      A:'<code>print("Hola " + nombre + ", tienes " + edad + " años")</code>',
+      B:'<code>print(f"Hola {nombre}, tienes {edad} años")</code>',
+      C:'<code>print($"Hola {nombre}, tienes {edad} años")</code>',
+      D:'<code>print("Hola %s, tienes %d años")</code>'
+    }
+  },
+
+  // ── COMPLETAR (6) ────────────────────────────────
+  { id:'apl_py_007', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'completar',
+    enunciado:'Completa la <strong>función de conversión</strong> para transformar el texto ingresado a número entero:',
+    codigoAntes:'texto = input("Ingresa un número: ")\nnumero = ',
+    codigoDespues:'(texto)\nprint(numero * 2)',
+    placeholder:'función'
+  },
+  { id:'apl_py_008', bloom:'aplicar', nivel:'intermedio', tema:'Salida de datos', tipo:'completar',
+    enunciado:'Completa el <strong>prefijo</strong> necesario para que funcione el f-string de Python:',
+    codigoAntes:'nombre = "María"\nedad = 19\nprint(',
+    codigoDespues:'"Hola {nombre}, tienes {edad} años")',
+    placeholder:'prefijo (f)'
+  },
+  { id:'apl_py_009', bloom:'aplicar', nivel:'intermedio', tema:'Condicional simple', tipo:'completar',
+    enunciado:'Completa el <strong>operador relacional</strong> para que el mensaje se muestre si la temperatura supera los 35 grados:',
+    codigoAntes:'temperatura = float(input())\nif temperatura ',
+    codigoDespues:' 35:\n    print("Hace mucho calor")',
+    placeholder:'operador'
+  },
+  { id:'apl_py_010', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'completar',
+    enunciado:'Completa la <strong>función de conversión</strong> para leer un número decimal (flotante):',
+    codigoAntes:'print("Ingresa el precio: ")\nprecio = ',
+    codigoDespues:'(input())\nprint("Con IGV:", precio * 1.18)',
+    placeholder:'función'
+  },
+  { id:'apl_py_011', bloom:'aplicar', nivel:'intermedio', tema:'Condicional doble', tipo:'completar',
+    enunciado:'Completa la <strong>palabra clave</strong> del bloque alternativo:',
+    codigoAntes:'nota = int(input())\nif nota >= 60:\n    print("Aprobado")\n',
+    codigoDespues:':\n    print("Desaprobado")',
+    placeholder:'palabra clave'
+  },
+  { id:'apl_py_012', bloom:'aplicar', nivel:'avanzado', tema:'Jerarquía de operadores', tipo:'completar',
+    enunciado:'Completa la <strong>expresión con paréntesis</strong> para calcular el promedio correctamente:',
+    codigoAntes:'n1, n2, n3 = 14, 16, 18\npromedio = ',
+    codigoDespues:' / 3\nprint("Promedio:", promedio)',
+    placeholder:'(n1 + n2 + ...)'
+  },
+
+  // ── ERROR (6) ────────────────────────────────────
+  { id:'apl_py_013', bloom:'aplicar', nivel:'intermedio', tema:'Conversión de tipos', tipo:'error',
+    enunciado:'¿En qué línea hay un error que causa fallo al ejecutar la suma?',
+    instruccion:'¿En qué línea hay un error que causa fallo al ejecutar la suma?',
+    lineas:[
+      'entrada = input("Ingresa un número: ")',
+      'resultado = entrada + 5',
+      'print(resultado)'
+    ]
+  },
+  { id:'apl_py_014', bloom:'aplicar', nivel:'basico', tema:'Salida de datos', tipo:'error',
+    enunciado:'¿En qué línea hay un error de sintaxis?',
+    instruccion:'¿En qué línea hay un error de sintaxis?',
+    lineas:[
+      'nombre = "Ana"',
+      'print("Hola" nombre)',
+      'print("Bienvenida")'
+    ]
+  },
+  { id:'apl_py_015', bloom:'aplicar', nivel:'intermedio', tema:'Condicional simple', tipo:'error',
+    enunciado:'¿En qué línea hay un error de indentación o sintaxis?',
+    instruccion:'¿En qué línea hay un error de indentación o sintaxis?',
+    lineas:[
+      'edad = int(input())',
+      'if edad >= 18',
+      '    print("Mayor de edad")'
+    ]
+  },
+  { id:'apl_py_016', bloom:'aplicar', nivel:'intermedio', tema:'Condicional múltiple', tipo:'error',
+    enunciado:'¿En qué línea hay un error de sintaxis en el bloque condicional?',
+    instruccion:'¿En qué línea hay un error de sintaxis en el bloque condicional?',
+    lineas:[
+      'nota = int(input())',
+      'if nota >= 70:',
+      '    print("Aprobado")',
+      'elseif nota >= 60:',
+      '    print("Regular")'
+    ]
+  },
+  { id:'apl_py_017', bloom:'aplicar', nivel:'intermedio', tema:'Operadores lógicos', tipo:'error',
+    enunciado:'¿En qué línea hay un error al usar el operador lógico?',
+    instruccion:'¿En qué línea hay un error al usar el operador lógico?',
+    lineas:[
+      'edad = int(input())',
+      'tiene_dni = True',
+      'if edad >= 18 && tiene_dni:',
+      '    print("Puede votar")'
+    ]
+  },
+  { id:'apl_py_018', bloom:'aplicar', nivel:'basico', tema:'Variables', tipo:'error',
+    enunciado:'¿En qué línea se produce un error porque la variable no existe todavía?',
+    instruccion:'¿En qué línea se produce un error porque la variable no existe todavía?',
+    lineas:[
+      'print("El doble es:", numero * 2)',
+      'numero = int(input("Ingresa un número: "))',
+      'print("Listo")'
+    ]
+  }
+];
+
+// ── ANALIZAR ──────────────────────────────────────────
+const BANCO_CS_ANALIZAR = [
+  // ── MC (3) ──────────────────────────────────────
+  { id:'ana_cs_001', bloom:'analizar', nivel:'intermedio', tema:'Jerarquía de operadores', tipo:'mc',
+    enunciado:'Analiza la expresión: <code>double r = 5 + 3 * 2 - 8 / 4;</code><br>¿Cuál es el valor final de <code>r</code>?',
+    opciones:{ A:'3', B:'9', C:'2', D:'7' }
+  },
+  { id:'ana_cs_002', bloom:'analizar', nivel:'avanzado', tema:'Condicionales anidadas', tipo:'mc',
+    enunciado:'Analiza el código: si <code>edad = 15</code> y <code>tienePermiso = true</code>, ¿qué se imprime?<br><pre>if (edad >= 18)\n    Console.WriteLine("Adulto");\nelse {\n    if (tienePermiso)\n        Console.WriteLine("Menor con permiso");\n    else\n        Console.WriteLine("Acceso denegado");\n}</pre>',
+    opciones:{
+      A:'"Adulto"',
+      B:'"Menor con permiso"',
+      C:'"Acceso denegado"',
+      D:'Nada, el código no compila'
+    }
+  },
+  { id:'ana_cs_003', bloom:'analizar', nivel:'avanzado', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuál de los siguientes bloques <code>if</code> en C# <strong>solo permite el acceso</strong> si el usuario tiene más de 18 años Y ha iniciado sesión?',
+    opciones:{
+      A:'<code>if (edad &gt; 18 || iniciado)</code>',
+      B:'<code>if (edad &gt; 18 &amp;&amp; iniciado)</code>',
+      C:'<code>if (edad &gt; 18 &amp; iniciado)</code>',
+      D:'<code>if (!edad &lt;= 18)</code>'
+    }
+  },
+  // ── ERROR (3) ────────────────────────────────────
+  { id:'ana_cs_004', bloom:'analizar', nivel:'avanzado', tema:'Condicionales anidadas', tipo:'error',
+    enunciado:'El siguiente programa debería mostrar si un número es positivo, negativo o cero. ¿En qué línea está el error lógico?',
+    instruccion:'El siguiente programa debería mostrar si un número es positivo, negativo o cero. ¿En qué línea está el error lógico?',
+    lineas:[
+      'int n = -5;',
+      'if (n > 0)',
+      '    Console.WriteLine("Positivo");',
+      'else if (n > 0)',
+      '    Console.WriteLine("Negativo");',
+      'else',
+      '    Console.WriteLine("Cero");'
+    ]
+  },
+  { id:'ana_cs_005', bloom:'analizar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'error',
+    enunciado:'El código calcula un descuento del 20%. ¿En qué línea hay un error que produce un resultado incorrecto?',
+    instruccion:'El código calcula un descuento del 20%. ¿En qué línea hay un error que produce un resultado incorrecto?',
+    lineas:[
+      'double precio = 200;',
+      'double descuento = precio * 20;',
+      'double final = precio - descuento;',
+      'Console.WriteLine("Precio final: " + final);'
+    ]
+  },
+  { id:'ana_cs_006', bloom:'analizar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'error',
+    enunciado:'El código clasifica edades. ¿En qué línea hay un error que hace que nunca se llegue al último caso?',
+    instruccion:'El código clasifica edades. ¿En qué línea hay un error que hace que nunca se llegue al último caso?',
+    lineas:[
+      'int edad = 25;',
+      'if (edad >= 0)',
+      '    Console.WriteLine("Cualquier edad");',
+      'else if (edad >= 18)',
+      '    Console.WriteLine("Adulto");',
+      'else',
+      '    Console.WriteLine("Menor");'
+    ]
+  },
+  // ── ORDENAR (3) ──────────────────────────────────
+  { id:'ana_cs_007', bloom:'analizar', nivel:'intermedio', tema:'Estructura secuencial', tipo:'ordenar',
+    instruccion:'Ordena los pasos para calcular el área de un triángulo en C# (base=5, altura=8):',
+    elementos:[
+      'Console.WriteLine("Área: " + area);',
+      'double base = 5, altura = 8;',
+      'double area = (base * altura) / 2;',
+      'Console.Write("Calculando área... ");'
+    ]
+  },
+  { id:'ana_cs_008', bloom:'analizar', nivel:'intermedio', tema:'Entrada de datos', tipo:'ordenar',
+    instruccion:'Ordena los pasos para leer el nombre y la edad del usuario y mostrarlos en pantalla:',
+    elementos:[
+      'Console.WriteLine($"Hola {nombre}, tienes {edad} años");',
+      'string nombre = Console.ReadLine();',
+      'Console.Write("¿Cuál es tu nombre? ");',
+      'int edad = int.Parse(Console.ReadLine());',
+      'Console.Write("¿Cuántos años tienes? ");'
+    ]
+  },
+  { id:'ana_cs_009', bloom:'analizar', nivel:'avanzado', tema:'Condicional doble', tipo:'ordenar',
+    instruccion:'Ordena el algoritmo que lee una nota, valida que esté entre 0 y 20, y muestra si aprueba o no:',
+    elementos:[
+      'if (nota >= 11) Console.WriteLine("Aprobado"); else Console.WriteLine("Desaprobado");',
+      'int nota = int.Parse(Console.ReadLine());',
+      'Console.Write("Ingresa la nota (0-20): ");',
+      'if (nota < 0 || nota > 20) Console.WriteLine("Nota inválida");',
+      'else'
+    ]
+  }
+];
+
+const BANCO_PY_ANALIZAR = [
+  // ── MC (3) ──────────────────────────────────────
+  { id:'ana_py_001', bloom:'analizar', nivel:'intermedio', tema:'Jerarquía de operadores', tipo:'mc',
+    enunciado:'Analiza la expresión: <code>r = 5 + 3 * 2 - 8 // 4</code><br>¿Cuál es el valor final de <code>r</code>?',
+    opciones:{ A:'3', B:'9', C:'7', D:'2' }
+  },
+  { id:'ana_py_002', bloom:'analizar', nivel:'avanzado', tema:'Condicionales anidadas', tipo:'mc',
+    enunciado:'Analiza el código: si <code>edad = 15</code> y <code>tiene_permiso = True</code>, ¿qué se imprime?<br><pre>if edad >= 18:\n    print("Adulto")\nelse:\n    if tiene_permiso:\n        print("Menor con permiso")\n    else:\n        print("Acceso denegado")</pre>',
+    opciones:{
+      A:'"Adulto"',
+      B:'"Menor con permiso"',
+      C:'"Acceso denegado"',
+      D:'Nada, hay un error de indentación'
+    }
+  },
+  { id:'ana_py_003', bloom:'analizar', nivel:'avanzado', tema:'Operadores lógicos', tipo:'mc',
+    enunciado:'¿Cuál condición en Python <strong>solo permite acceso</strong> si el usuario tiene 18 o más años Y ha iniciado sesión?',
+    opciones:{
+      A:'<code>if edad >= 18 or iniciado:</code>',
+      B:'<code>if edad >= 18 and iniciado:</code>',
+      C:'<code>if not edad &lt; 18:</code>',
+      D:'<code>if edad >= 18 &amp;&amp; iniciado:</code>'
+    }
+  },
+  // ── ERROR (3) ────────────────────────────────────
+  { id:'ana_py_004', bloom:'analizar', nivel:'avanzado', tema:'Condicionales anidadas', tipo:'error',
+    enunciado:'El código debería mostrar si un número es positivo, negativo o cero. ¿En qué línea está el error lógico?',
+    instruccion:'El código debería mostrar si un número es positivo, negativo o cero. ¿En qué línea está el error lógico?',
+    lineas:[
+      'n = -3',
+      'if n > 0:',
+      '    print("Positivo")',
+      'elif n > 0:',
+      '    print("Negativo")',
+      'else:',
+      '    print("Cero")'
+    ]
+  },
+  { id:'ana_py_005', bloom:'analizar', nivel:'intermedio', tema:'Operadores aritméticos', tipo:'error',
+    enunciado:'El código calcula un descuento del 15%. ¿En qué línea hay un error que produce un resultado incorrecto?',
+    instruccion:'El código calcula un descuento del 15%. ¿En qué línea hay un error que produce un resultado incorrecto?',
+    lineas:[
+      'precio = 100',
+      'descuento = precio * 15',
+      'final = precio - descuento',
+      'print("Precio final:", final)'
+    ]
+  },
+  { id:'ana_py_006', bloom:'analizar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'error',
+    enunciado:'El código clasifica edades pero nunca llega al caso "Adulto". ¿En qué línea está el error?',
+    instruccion:'El código clasifica edades pero nunca llega al caso "Adulto". ¿En qué línea está el error?',
+    lineas:[
+      'edad = 25',
+      'if edad >= 0:',
+      '    print("Cualquier persona")',
+      'elif edad >= 18:',
+      '    print("Adulto")',
+      'else:',
+      '    print("Menor")'
+    ]
+  },
+  // ── ORDENAR (3) ──────────────────────────────────
+  { id:'ana_py_007', bloom:'analizar', nivel:'intermedio', tema:'Estructura secuencial', tipo:'ordenar',
+    instruccion:'Ordena los pasos para calcular el área de un círculo en Python (radio = 5):',
+    elementos:[
+      'print("Área:", area)',
+      'radio = 5',
+      'import math',
+      'area = math.pi * radio ** 2'
+    ]
+  },
+  { id:'ana_py_008', bloom:'analizar', nivel:'intermedio', tema:'Entrada de datos', tipo:'ordenar',
+    instruccion:'Ordena los pasos para leer nombre y edad del usuario y mostrarlos con un f-string:',
+    elementos:[
+      'print(f"Hola {nombre}, tienes {edad} años")',
+      'nombre = input("¿Cuál es tu nombre? ")',
+      'edad = int(input("¿Cuántos años tienes? "))'
+    ]
+  },
+  { id:'ana_py_009', bloom:'analizar', nivel:'avanzado', tema:'Condicional doble', tipo:'ordenar',
+    instruccion:'Ordena el algoritmo que lee una nota, verifica el rango y muestra si aprueba o no:',
+    elementos:[
+      'if nota >= 11: print("Aprobado")',
+      'nota = int(input("Ingresa la nota (0-20): "))',
+      'else: print("Desaprobado")',
+      'if nota < 0 or nota > 20: print("Nota inválida")',
+      'else:'
+    ]
+  }
+];
+
+// ── EVALUAR ───────────────────────────────────────────
+const BANCO_CS_EVALUAR = [
+  // ── MC (2) ──────────────────────────────────────
+  { id:'eva_cs_001', bloom:'evaluar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'Un sistema de calificaciones necesita 4 categorías: A (≥90), B (≥75), C (≥60), D (&lt;60). ¿Cuál implementación en C# es <strong>más correcta y eficiente</strong>?',
+    opciones:{
+      A:'Cuatro <code>if</code> independientes: <code>if(n&gt;=90)…</code> <code>if(n&gt;=75)…</code> <code>if(n&gt;=60)…</code> <code>if(n&lt;60)…</code>',
+      B:'Una cadena <code>if / else if / else if / else</code> con condiciones en orden descendente',
+      C:'Una cadena <code>if / else if / else if / else</code> con condiciones en orden ascendente',
+      D:'Un único <code>if</code> con todas las condiciones unidas por <code>||</code>'
+    }
+  },
+  { id:'eva_cs_002', bloom:'evaluar', nivel:'avanzado', tema:'Tipos de datos', tipo:'mc',
+    enunciado:'Un programa debe almacenar el precio de un producto con exactitud financiera (ej. S/. 1299.99). ¿Cuál tipo de dato de C# es el <strong>más adecuado</strong> para este caso?',
+    opciones:{
+      A:'<code>int</code>, porque es el más rápido',
+      B:'<code>float</code>, porque acepta decimales',
+      C:'<code>double</code>, porque tiene buena precisión general',
+      D:'<code>decimal</code>, porque está diseñado para cálculos monetarios con alta precisión'
+    }
+  },
+  // ── ORDENAR (2) ──────────────────────────────────
+  { id:'eva_cs_003', bloom:'evaluar', nivel:'avanzado', tema:'Diseño de algoritmo', tipo:'ordenar',
+    instruccion:'Evalúa y ordena los pasos del algoritmo óptimo para calcular el mayor de tres números en C#:',
+    elementos:[
+      'Console.WriteLine("El mayor es: " + mayor);',
+      'int a = int.Parse(Console.ReadLine()); int b = int.Parse(Console.ReadLine()); int c = int.Parse(Console.ReadLine());',
+      'if (b > mayor) mayor = b;',
+      'int mayor = a;',
+      'if (c > mayor) mayor = c;'
+    ]
+  },
+  { id:'eva_cs_004', bloom:'evaluar', nivel:'avanzado', tema:'Estructura secuencial', tipo:'ordenar',
+    instruccion:'Ordena los pasos del algoritmo que lee precio y cantidad, aplica 10% de descuento si el total supera S/. 100, y muestra el total final:',
+    elementos:[
+      'if (total > 100) total = total * 0.90;',
+      'Console.WriteLine("Total: S/. " + total);',
+      'double precio = double.Parse(Console.ReadLine());',
+      'int cantidad = int.Parse(Console.ReadLine());',
+      'double total = precio * cantidad;'
+    ]
+  },
+  // ── MATCHING (2) ─────────────────────────────────
+  { id:'eva_cs_005', bloom:'evaluar', nivel:'avanzado', tema:'Tipos y conversiones', tipo:'matching',
+    instruccion:'Evalúa y relaciona cada situación con el tipo de dato o conversión más adecuado en C#:',
+    pares:[
+      { izq:'Almacenar si un usuario está activo',          der:'<code>bool</code>' },
+      { izq:'Calcular el IGV de una factura',               der:'<code>decimal</code>' },
+      { izq:'Guardar el código de estudiante "U2024001"',   der:'<code>string</code>' },
+      { izq:'Contar el número de intentos de login',        der:'<code>int</code>' }
+    ]
+  },
+  { id:'eva_cs_006', bloom:'evaluar', nivel:'avanzado', tema:'Operadores y estructuras', tipo:'matching',
+    instruccion:'Relaciona cada situación con el operador o estructura de C# más adecuado para resolverla:',
+    pares:[
+      { izq:'Verificar si una nota está entre 0 y 20',       der:'<code>nota >= 0 &amp;&amp; nota &lt;= 20</code>' },
+      { izq:'Clasificar en 4 rangos de calificación',        der:'<code>if / else if / else if / else</code>' },
+      { izq:'Sumar 5 al valor actual de una variable x',     der:'<code>x += 5</code>' },
+      { izq:'Evaluar si al menos una condición es verdadera', der:'<code>condA || condB</code>' }
+    ]
+  }
+];
+
+const BANCO_PY_EVALUAR = [
+  // ── MC (2) ──────────────────────────────────────
+  { id:'eva_py_001', bloom:'evaluar', nivel:'avanzado', tema:'Condicional múltiple', tipo:'mc',
+    enunciado:'Un sistema de calificaciones necesita 4 categorías: A (≥90), B (≥75), C (≥60), D (&lt;60). ¿Cuál implementación en Python es <strong>más correcta y eficiente</strong>?',
+    opciones:{
+      A:'Cuatro <code>if</code> independientes evaluando cada rango',
+      B:'Una cadena <code>if / elif / elif / else</code> con condiciones en orden descendente',
+      C:'Una cadena <code>if / elif / elif / else</code> con condiciones en orden ascendente',
+      D:'Un único <code>if</code> con todas las condiciones unidas por <code>or</code>'
+    }
+  },
+  { id:'eva_py_002', bloom:'evaluar', nivel:'avanzado', tema:'Tipos de datos', tipo:'mc',
+    enunciado:'Un programa Python debe procesar el precio de un producto ingresado por el usuario (ej. <code>"29.99"</code>). ¿Cuál es la <strong>conversión más adecuada</strong>?',
+    opciones:{
+      A:'<code>int(input())</code>, porque es el tipo más simple',
+      B:'<code>str(input())</code>, para mantenerlo como texto',
+      C:'<code>float(input())</code>, porque el precio tiene decimales',
+      D:'No hace falta convertir; Python lo maneja automáticamente'
+    }
+  },
+  // ── ORDENAR (2) ──────────────────────────────────
+  { id:'eva_py_003', bloom:'evaluar', nivel:'avanzado', tema:'Diseño de algoritmo', tipo:'ordenar',
+    instruccion:'Evalúa y ordena los pasos del algoritmo óptimo para encontrar el mayor de tres números en Python:',
+    elementos:[
+      'print("El mayor es:", mayor)',
+      'a, b, c = int(input()), int(input()), int(input())',
+      'if b > mayor: mayor = b',
+      'mayor = a',
+      'if c > mayor: mayor = c'
+    ]
+  },
+  { id:'eva_py_004', bloom:'evaluar', nivel:'avanzado', tema:'Estructura secuencial', tipo:'ordenar',
+    instruccion:'Ordena los pasos del algoritmo que lee precio y cantidad, aplica 10% de descuento si el total supera S/. 100, y muestra el total final:',
+    elementos:[
+      'if total > 100: total = total * 0.90',
+      'print("Total: S/.", total)',
+      'precio = float(input("Precio: "))',
+      'cantidad = int(input("Cantidad: "))',
+      'total = precio * cantidad'
+    ]
+  },
+  // ── MATCHING (2) ─────────────────────────────────
+  { id:'eva_py_005', bloom:'evaluar', nivel:'avanzado', tema:'Tipos y conversiones', tipo:'matching',
+    instruccion:'Evalúa y relaciona cada situación con el tipo de dato o conversión más adecuado en Python:',
+    pares:[
+      { izq:'Almacenar si el usuario está conectado',        der:'<code>bool</code>' },
+      { izq:'Leer el precio de un producto con decimales',   der:'<code>float(input())</code>' },
+      { izq:'Guardar el nombre del usuario',                 der:'<code>str</code>' },
+      { izq:'Contar los intentos fallidos de login',         der:'<code>int</code>' }
+    ]
+  },
+  { id:'eva_py_006', bloom:'evaluar', nivel:'avanzado', tema:'Operadores y estructuras', tipo:'matching',
+    instruccion:'Relaciona cada situación con el operador o estructura de Python más adecuado:',
+    pares:[
+      { izq:'Verificar si la nota está entre 0 y 20',         der:'<code>0 &lt;= nota &lt;= 20</code>' },
+      { izq:'Clasificar en 4 rangos de calificación',         der:'<code>if / elif / elif / else</code>' },
+      { izq:'Sumar 5 al valor actual de la variable x',       der:'<code>x += 5</code>' },
+      { izq:'Evaluar si al menos una condición es verdadera', der:'<code>condA or condB</code>' }
+    ]
+  }
+];
+
+// ══════════════════════════════════════════════════════
+// UTILIDADES
+// ══════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function formatTime(s) {
+  return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+}
+
+// ══════════════════════════════════════════════════════
+// SCREEN 1 – REGISTRO
+// ══════════════════════════════════════════════════════
+function selectLang(lang) {
+  selectedLanguage = lang;
+  document.getElementById('card-cs').classList.toggle('selected', lang === 'CS');
+  document.getElementById('card-py').classList.toggle('selected', lang === 'PY');
+}
+
+function verificarCodigo(codigo) {
+  return new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    const t = setTimeout(() => { xhr.abort(); resolve(null); }, 8000);
+    xhr.open('GET', `${EVAL_SHEETS_URL}?action=verificar&codigo=${encodeURIComponent(codigo)}`);
+    xhr.onload  = () => { clearTimeout(t); try { resolve(JSON.parse(xhr.responseText)); } catch(e) { resolve(null); } };
+    xhr.onerror = () => { clearTimeout(t); resolve(null); };
+    xhr.send();
+  });
+}
+
+async function iniciarRegistro() {
+  if (!selectedLanguage) {
+    alert('Por favor selecciona tu lenguaje de programación (C# o Python).');
+    return;
+  }
+  const nombres   = document.getElementById('inp-nombres').value.trim();
+  const apellidos = document.getElementById('inp-apellidos').value.trim();
+  const codigo    = document.getElementById('inp-codigo').value.trim();
+  if (!nombres || !apellidos || !codigo) {
+    alert('Por favor completa todos los campos.');
+    return;
+  }
+  const btn = document.getElementById('btn-inicio');
+  btn.disabled = true;
+  btn.textContent = 'Verificando… ⏳';
+
+  const resultado = await verificarCodigo(codigo);
+  if (resultado && resultado.yaEnviado === true) {
+    showScreen('screen-bloqueado');
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Iniciar evaluación →';
+  studentData = { nombres, apellidos, codigo };
+  startExam();
+}
+
+// ══════════════════════════════════════════════════════
+// INICIAR EXAMEN
+// ══════════════════════════════════════════════════════
+function startExam() {
+  const isCS = selectedLanguage === 'CS';
+  const rec  = isCS ? BANCO_CS_RECORDAR   : BANCO_PY_RECORDAR;
+  const comp = isCS ? BANCO_CS_COMPRENDER : BANCO_PY_COMPRENDER;
+  const apl  = isCS ? BANCO_CS_APLICAR    : BANCO_PY_APLICAR;
+  const ana  = isCS ? BANCO_CS_ANALIZAR   : BANCO_PY_ANALIZAR;
+  const eva  = isCS ? BANCO_CS_EVALUAR    : BANCO_PY_EVALUAR;
+
+  // Distribución Bloom: 4-5-6-3-2 = 20 preguntas
+  activeQuestions = shuffle([
+    ...shuffle(rec ).slice(0, 4),
+    ...shuffle(comp).slice(0, 5),
+    ...shuffle(apl ).slice(0, 6),
+    ...shuffle(ana ).slice(0, 3),
+    ...shuffle(eva ).slice(0, 2)
+  ]);
+
+  answers       = {};
+  ordenTouched  = {};
+  currentQ      = 0;
+  maxReached    = 0;
+  secondsLeft   = 45 * 60;
+  submitted     = false;
+  advertencias  = 0;
+  enExamen      = true;
+
+  // Header
+  document.getElementById('hdr-nombre').textContent = studentData.nombres + ' ' + studentData.apellidos;
+  document.getElementById('hdr-codigo').textContent = studentData.codigo;
+  const hdrLang = document.getElementById('hdr-lang');
+  if (isCS) { hdrLang.textContent = 'C#';     hdrLang.className = 'lang-badge cs'; }
+  else       { hdrLang.textContent = 'Python'; hdrLang.className = 'lang-badge py'; }
+
+  showScreen('screen-examen');
+  renderDots();
+  renderQuestion(0);
+  startTimer();
+  setupAntiCheat();
+}
+
+// ══════════════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════════════
+function startTimer() {
+  const el = document.getElementById('timer');
+  el.textContent = formatTime(secondsLeft);
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    el.textContent = formatTime(secondsLeft);
+    if      (secondsLeft <= 300) el.className = 'timer danger';
+    else if (secondsLeft <= 600) el.className = 'timer warning';
+    else                         el.className = 'timer';
+    if (secondsLeft <= 0) { clearInterval(timerInterval); submitAnswers(true); }
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════════════
+// ANTI-CHEAT
+// ══════════════════════════════════════════════════════
+function setupAntiCheat() {
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('blur', onWindowBlur);
+  window.addEventListener('beforeunload', onBeforeUnload);
+}
+
+function onVisibilityChange() {
+  if (!enExamen || submitted) return;
+  if (document.hidden) registrarSalida();
+}
+
+function onWindowBlur() {
+  if (!enExamen || submitted || document.hidden) return;
+  registrarSalida();
+}
+
+function onBeforeUnload(e) {
+  if (!enExamen || submitted) return;
+  e.preventDefault(); e.returnValue = '';
+}
+
+function registrarSalida() {
+  if (advertenciaActiva) return;
+  advertencias++;
+  if (advertencias >= 3) { terminarPorInfraccion(); return; }
+
+  advertenciaActiva = true;
+  document.getElementById('adv-num').textContent = advertencias;
+  document.getElementById('adv-num').classList.toggle('danger-mode', advertencias === 2);
+
+  if (advertencias === 2) {
+    document.getElementById('adv-titulo').textContent = '⚠️ Última advertencia';
+    document.getElementById('adv-texto').innerHTML =
+      'Esta es tu <strong>segunda y última advertencia</strong>. Si abandonas el examen una vez más, será terminado automáticamente y registrado como <strong>INFRACCIÓN</strong>.';
+  } else {
+    document.getElementById('adv-titulo').textContent = '⚠️ Advertencia de salida';
+    document.getElementById('adv-texto').innerHTML =
+      `Se detectó que saliste del examen. Esta es tu advertencia <strong>${advertencias}</strong> de 3. A la tercera tu evaluación será terminada automáticamente.`;
+  }
+  document.getElementById('overlay-advertencia').classList.add('active');
+}
+
+function cerrarAdvertencia() {
+  advertenciaActiva = false;
+  document.getElementById('overlay-advertencia').classList.remove('active');
+}
+
+function terminarPorInfraccion() {
+  enExamen = false; submitted = true;
+  clearInterval(timerInterval);
+  const respondidas = activeQuestions.filter(q => isAnswered(q)).length;
+  document.getElementById('term-respondidas').textContent = `${respondidas} / 20`;
+
+  fetch(EVAL_SHEETS_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tipo: 'infraccion',
+      nombre: studentData.nombres, apellidos: studentData.apellidos,
+      codigo: studentData.codigo,  lenguaje: selectedLanguage,
+      timestamp: new Date().toISOString(),
+      advertencias: 3, preguntasRespondidas: respondidas, totalPreguntas: 20
+    })
+  }).catch(() => {});
+
+  document.getElementById('overlay-advertencia').classList.remove('active');
+  showScreen('screen-terminado');
+}
+
+// ══════════════════════════════════════════════════════
+// NAVEGACIÓN Y DOTS
+// ══════════════════════════════════════════════════════
+function renderDots() {
+  const nav = document.getElementById('dots-nav');
+  nav.innerHTML = '';
+  activeQuestions.forEach((q, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (i > maxReached)       d.classList.add('locked');
+    if (i === currentQ)       d.classList.add('current');
+    if (isAnswered(q))        d.classList.add('answered');
+    d.textContent = i + 1;
+    d.onclick = () => { if (i <= maxReached) goToQuestion(i); };
+    nav.appendChild(d);
+  });
+}
+
+function goToQuestion(idx) {
+  currentQ = idx;
+  renderQuestion(idx);
+  renderDots();
+  updateNavBtns();
+}
+
+function navegarNext() {
+  if (currentQ < activeQuestions.length - 1) {
+    currentQ++;
+    if (currentQ > maxReached) maxReached = currentQ;
+    goToQuestion(currentQ);
+  } else {
+    submitAnswers(false);
+  }
+}
+
+function navegarPrev() {
+  if (currentQ > 0) { currentQ--; goToQuestion(currentQ); }
+}
+
+function updateNavBtns() {
+  const prev = document.getElementById('btn-prev');
+  const next = document.getElementById('btn-next');
+  prev.style.display = currentQ > 0 ? '' : 'none';
+  next.disabled = !isAnswered(activeQuestions[currentQ]);
+  if (currentQ === activeQuestions.length - 1) {
+    next.textContent = '✅ Enviar';
+    next.className   = 'btn btn-success';
+  } else {
+    next.textContent = 'Siguiente →';
+    next.className   = 'btn btn-primary';
+  }
+}
+
+function updateAnsweredCount() {
+  const n = activeQuestions.filter(q => isAnswered(q)).length;
+  document.getElementById('hdr-respondidas').textContent = n;
+  document.getElementById('progress-bar').style.width = `${(n / 20) * 100}%`;
+}
+
+// ══════════════════════════════════════════════════════
+// isAnswered
+// ══════════════════════════════════════════════════════
+function isAnswered(q) {
+  const v = answers[q.id];
+  switch (q.tipo) {
+    case 'mc':
+    case 'error':     return v !== undefined && v !== '';
+    case 'corta':
+    case 'completar': return v !== undefined && v.trim() !== '';
+    case 'ordenar':   return !!ordenTouched[q.id];
+    case 'matching': {
+      if (!v) return false;
+      try {
+        const obj = JSON.parse(v);
+        return q.pares.every((_, i) => obj[String(i)] !== undefined && obj[String(i)] !== '');
+      } catch(e) { return false; }
+    }
+    default: return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER QUESTION  (despachador)
+// ══════════════════════════════════════════════════════
+const bloomLabels  = { recordar:'Recordar', comprender:'Comprender', aplicar:'Aplicar', analizar:'Analizar', evaluar:'Evaluar' };
+const nivelLabels  = { basico:'Básico', intermedio:'Intermedio', avanzado:'Avanzado' };
+
+function renderQuestion(idx) {
+  const q = activeQuestions[idx];
+  let body = '';
+  switch (q.tipo) {
+    case 'mc':        body = renderMC(q);        break;
+    case 'corta':     body = renderCorta(q);     break;
+    case 'matching':  body = renderMatching(q);  break;
+    case 'completar': body = renderCompletar(q); break;
+    case 'ordenar':   body = renderOrdenar(q);   break;
+    case 'error':     body = renderError(q);     break;
+  }
+  document.getElementById('question-container').innerHTML = `
+    <div class="question-card">
+      <div class="question-meta">
+        <span class="q-number">Pregunta ${idx + 1} / ${activeQuestions.length}</span>
+        <span class="q-bloom-badge bloom-${q.bloom}">${bloomLabels[q.bloom]}</span>
+        <span class="q-nivel-badge">${nivelLabels[q.nivel]}</span>
+      </div>
+      <div class="question-enunciado">${q.enunciado || ''}</div>
+      ${body}
+    </div>`;
+  bindPostRender(q);
+  updateNavBtns();
+  updateAnsweredCount();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER MC
+// ══════════════════════════════════════════════════════
+function renderMC(q) {
+  return `<div class="options-grid">` +
+    ['A','B','C','D'].map(l => `
+      <button class="option-btn ${answers[q.id] === l ? 'selected' : ''}"
+              id="opt-${l}" onclick="selectMC('${q.id}','${l}')">
+        <span class="option-letter">${l}</span>
+        <span>${q.opciones[l]}</span>
+      </button>`).join('') +
+  `</div>`;
+}
+function selectMC(qid, l) {
+  answers[qid] = l;
+  ['A','B','C','D'].forEach(x => {
+    const b = document.getElementById(`opt-${x}`);
+    if (b) b.classList.toggle('selected', x === l);
+  });
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER CORTA
+// ══════════════════════════════════════════════════════
+function renderCorta(q) {
+  const v = answers[q.id] || '';
+  return `<input type="text" class="input-corta" id="inp-corta-${q.id}"
+    placeholder="${q.placeholder || 'Escribe tu respuesta…'}"
+    value="${v.replace(/"/g,'&quot;')}"
+    oninput="updateCorta('${q.id}',this.value)">`;
+}
+function updateCorta(qid, v) {
+  answers[qid] = v;
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER MATCHING
+// ══════════════════════════════════════════════════════
+function renderMatching(q) {
+  const sk = `_mshuf_${q.id}`;
+  if (!window[sk]) window[sk] = shuffle(q.pares.map((p,i) => ({ txt: p.der, orig: i })));
+  const shuf = window[sk];
+  let saved = {};
+  try { if (answers[q.id]) saved = JSON.parse(answers[q.id]); } catch(e) {}
+
+  const filas = q.pares.map((p, i) => {
+    const sel = saved[String(i)] !== undefined ? String(saved[String(i)]) : '';
+    const opts = [`<option value="">— Seleccionar —</option>`,
+      ...shuf.map(d => `<option value="${d.orig}" ${sel === String(d.orig) ? 'selected' : ''}>${d.txt}</option>`)
+    ].join('');
+    return `<tr>
+      <td>${p.izq}</td>
+      <td><select class="matching-select"
+           onchange="updateMatching('${q.id}',${i},this.value)">${opts}</select></td>
+    </tr>`;
+  }).join('');
+
+  return `<p class="matching-instruccion">${q.instruccion || 'Relaciona cada elemento con su correspondiente:'}</p>
+    <table class="matching-table"><tbody>${filas}</tbody></table>`;
+}
+function updateMatching(qid, row, val) {
+  let saved = {};
+  try { if (answers[qid]) saved = JSON.parse(answers[qid]); } catch(e) {}
+  saved[String(row)] = val;
+  answers[qid] = JSON.stringify(saved);
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER COMPLETAR
+// ══════════════════════════════════════════════════════
+function renderCompletar(q) {
+  const v = answers[q.id] || '';
+  const w = Math.max(80, v.length * 9 + 40);
+  return `<div class="completar-wrap">${q.codigoAntes}<input type="text"
+    class="input-completar" id="inp-comp-${q.id}"
+    placeholder="${q.placeholder || '…'}"
+    value="${v.replace(/"/g,'&quot;')}"
+    style="width:${w}px"
+    oninput="updateCompletar('${q.id}',this.value)"
+  />${q.codigoDespues}</div>`;
+}
+function updateCompletar(qid, v) {
+  answers[qid] = v;
+  const el = document.getElementById(`inp-comp-${qid}`);
+  if (el) el.style.width = Math.max(80, v.length * 9 + 40) + 'px';
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER ORDENAR
+// ══════════════════════════════════════════════════════
+function renderOrdenar(q) {
+  const sk = `_ord_${q.id}`;
+  if (!window[sk]) window[sk] = shuffle(q.elementos.map((e,i) => ({ txt: e, orig: i })));
+  let orden;
+  if (answers[q.id]) {
+    try { orden = JSON.parse(answers[q.id]).map(i => ({ txt: q.elementos[i], orig: i })); }
+    catch(e) { orden = window[sk]; }
+  } else { orden = window[sk]; }
+
+  return `<p class="ordenar-instruccion">${q.instruccion || 'Ordena los elementos en el orden correcto:'}</p>
+    <div class="ordenar-list" id="ord-${q.id}">` +
+    orden.map((item, pos) => `
+      <div class="ordenar-item" data-orig="${item.orig}">
+        <span class="ordenar-num">${pos + 1}</span>
+        <span class="ordenar-text">${item.txt}</span>
+        <div class="ordenar-btns">
+          <button class="btn-move" ${pos === 0 ? 'disabled' : ''}
+                  onclick="moverItem('${q.id}',this)">▲</button>
+          <button class="btn-move" ${pos === orden.length - 1 ? 'disabled' : ''}
+                  onclick="moverItem('${q.id}',this,1)">▼</button>
+        </div>
+      </div>`).join('') +
+  `</div>`;
+}
+
+function moverItem(qid, btn, dir = -1) {
+  const list  = document.getElementById(`ord-${qid}`);
+  const items = Array.from(list.children);
+  const item  = btn.closest('.ordenar-item');
+  const pos   = items.indexOf(item);
+  const newPos = pos + dir;
+  if (newPos < 0 || newPos >= items.length) return;
+
+  if (dir === -1) list.insertBefore(item, items[newPos]);
+  else            list.insertBefore(items[newPos], item);
+
+  // Renumerar y rebind
+  Array.from(list.children).forEach((el, i) => {
+    el.querySelector('.ordenar-num').textContent = i + 1;
+    const btns = el.querySelectorAll('.btn-move');
+    btns[0].disabled = i === 0;
+    btns[1].disabled = i === list.children.length - 1;
+    btns[0].onclick  = () => moverItem(qid, btns[0], -1);
+    btns[1].onclick  = () => moverItem(qid, btns[1],  1);
+  });
+
+  const indices = Array.from(list.children).map(el => parseInt(el.dataset.orig));
+  answers[qid]       = JSON.stringify(indices);
+  ordenTouched[qid]  = true;
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER ERROR
+// ══════════════════════════════════════════════════════
+function renderError(q) {
+  return `<p class="error-instruccion">${q.instruccion || '¿En qué línea está el error?'}</p>
+    <div class="error-lineas">` +
+    q.lineas.map((linea, i) => `
+      <button class="error-linea-btn ${String(answers[q.id]) === String(i) ? 'selected' : ''}"
+              onclick="selectErrorLine('${q.id}',${i})">
+        <span class="error-linea-num">${i + 1}</span>
+        <span>${linea}</span>
+      </button>`).join('') +
+  `</div>`;
+}
+function selectErrorLine(qid, idx) {
+  answers[qid] = String(idx);
+  document.querySelectorAll('.error-linea-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  updateNavBtns(); updateAnsweredCount(); renderDots();
+}
+
+// ══════════════════════════════════════════════════════
+// POST-RENDER (focus, etc.)
+// ══════════════════════════════════════════════════════
+function bindPostRender(q) {
+  if (q.tipo === 'corta') {
+    const el = document.getElementById(`inp-corta-${q.id}`);
+    if (el) setTimeout(() => el.focus(), 60);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ENVÍO DE RESPUESTAS
+// ══════════════════════════════════════════════════════
+async function submitAnswers(porTiempo = false) {
+  if (submitted) return;
+  const respondidas  = activeQuestions.filter(q => isAnswered(q)).length;
+  const sinResponder = 20 - respondidas;
+
+  if (!porTiempo) {
+    const msg = sinResponder > 0
+      ? `Tienes ${sinResponder} pregunta(s) sin responder. ¿Deseas enviar de todas formas?`
+      : '¿Confirmas que deseas enviar tu evaluación?';
+    if (!confirm(msg)) return;
+  }
+
+  submitted = true; enExamen = false;
+  clearInterval(timerInterval);
+  document.getElementById('overlay-sending').classList.add('active');
+
+  const payload = {
+    tipo:       'evaluacion',
+    nombre:     studentData.nombres,
+    apellidos:  studentData.apellidos,
+    codigo:     studentData.codigo,
+    lenguaje:   selectedLanguage,
+    timestamp:  new Date().toISOString(),
+    preguntas:  activeQuestions.map(q => q.id),
+    tipos:      activeQuestions.map(q => q.tipo),
+    respuestas: activeQuestions.map(q => {
+      const v = answers[q.id];
+      return (v === undefined || v === null) ? '' : String(v);
+    }),
+    porTiempo
+  };
+
+  try {
+    await fetch(EVAL_SHEETS_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { /* no-cors siempre rechaza, es esperado */ }
+
+  document.getElementById('overlay-sending').classList.remove('active');
+  showConfirmation(respondidas, porTiempo);
+}
+
+function showConfirmation(respondidas, porTiempo) {
+  const lang = selectedLanguage === 'CS' ? 'C#' : 'Python';
+  document.getElementById('resumen-confirmacion').innerHTML = `
+    <div class="final-card-row">
+      <span class="label">Estudiante</span>
+      <span class="value">${studentData.nombres} ${studentData.apellidos}</span>
+    </div>
+    <div class="final-card-row">
+      <span class="label">Código</span>
+      <span class="value">${studentData.codigo}</span>
+    </div>
+    <div class="final-card-row">
+      <span class="label">Lenguaje</span>
+      <span class="value">${lang}</span>
+    </div>
+    <div class="final-card-row">
+      <span class="label">Preguntas respondidas</span>
+      <span class="value">${respondidas} / 20</span>
+    </div>
+    <div class="final-card-row">
+      <span class="label">Enviado por</span>
+      <span class="value">${porTiempo ? '⏱ Tiempo agotado' : '✅ Botón Enviar'}</span>
+    </div>`;
+  showScreen('screen-confirmacion');
+}
+</script>
+</body>
+</html>
