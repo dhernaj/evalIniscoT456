@@ -588,10 +588,9 @@
 ═══════════════════════════════════════════════════════ -->
 <div id="screen-bloqueado" class="screen">
   <div class="final-screen">
-    <div class="final-icon">🔒</div>
-    <h1 style="color:var(--warning)">Acceso bloqueado</h1>
-    <p>Este código de estudiante ya tiene una evaluación registrada. No es posible volver a rendir el examen.</p>
-    <p>Si crees que es un error, comunícate con: <strong>Ing. Danny Herrera Nájar</strong>.</p>
+    <div class="final-icon" id="bloqueado-icon">🔒</div>
+    <h1 style="color:var(--warning)" id="bloqueado-titulo">Acceso bloqueado</h1>
+    <p id="bloqueado-msg">Este código de estudiante ya tiene una evaluación registrada. No es posible volver a rendir el examen. Si crees que es un error, comunícate con <strong>Ing. Danny Herrera Nájar</strong>.</p>
   </div>
 </div>
 
@@ -1597,15 +1596,54 @@ function selectLang(lang) {
   document.getElementById('card-py').classList.toggle('selected', lang === 'PY');
 }
 
-function verificarCodigo(codigo) {
-  return new Promise(resolve => {
-    const xhr = new XMLHttpRequest();
-    const t = setTimeout(() => { xhr.abort(); resolve(null); }, 8000);
-    xhr.open('GET', `${EVAL_SHEETS_URL}?action=verificar&codigo=${encodeURIComponent(codigo)}`);
-    xhr.onload  = () => { clearTimeout(t); try { resolve(JSON.parse(xhr.responseText)); } catch(e) { resolve(null); } };
-    xhr.onerror = () => { clearTimeout(t); resolve(null); };
-    xhr.send();
-  });
+// ── Clave localStorage por código ────────────────────
+const LS_PREFIX = 'ciin1277_eval_';
+function lsKey(codigo) { return LS_PREFIX + String(codigo).toLowerCase().trim(); }
+
+// ── Verificación anti-reintento (doble capa) ─────────
+async function verificarCodigo(codigo) {
+  // Capa 1: localStorage instantáneo (sin red)
+  try {
+    const local = localStorage.getItem(lsKey(codigo));
+    if (local) return JSON.parse(local);
+  } catch(e) {}
+
+  // Capa 2: servidor via fetch (mejor manejo de CORS/redirects que XHR)
+  try {
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const res   = await fetch(
+      `${EVAL_SHEETS_URL}?action=verificar&codigo=${encodeURIComponent(codigo)}`,
+      { signal: ctrl.signal }
+    );
+    clearTimeout(timer);
+    const data = await res.json();
+    // Si el servidor confirma bloqueo → guardar en localStorage también
+    if (data && (data.yaEnviado || data.yaInfracciono)) {
+      try { localStorage.setItem(lsKey(codigo), JSON.stringify(data)); } catch(e) {}
+    }
+    return data;
+  } catch(e) {
+    return null;  // fail-open: sin red deja pasar
+  }
+}
+
+// ── Mostrar pantalla de bloqueo con mensaje dinámico ──
+function mostrarBloqueado(porInfraccion) {
+  if (porInfraccion) {
+    document.getElementById('bloqueado-icon').textContent   = '🚫';
+    document.getElementById('bloqueado-titulo').textContent = 'Evaluación bloqueada';
+    document.getElementById('bloqueado-titulo').style.color = 'var(--danger)';
+    document.getElementById('bloqueado-msg').innerHTML =
+      'Tu evaluación anterior fue <strong>terminada por 3 infracciones</strong>. El incidente ha sido registrado. Comunícate con <strong>Ing. Danny Herrera Nájar</strong> para mayor información.';
+  } else {
+    document.getElementById('bloqueado-icon').textContent   = '🔒';
+    document.getElementById('bloqueado-titulo').textContent = 'Acceso bloqueado';
+    document.getElementById('bloqueado-titulo').style.color = 'var(--warning)';
+    document.getElementById('bloqueado-msg').innerHTML =
+      'Este código de estudiante ya tiene una evaluación registrada. No es posible volver a rendir el examen. Si crees que es un error, comunícate con <strong>Ing. Danny Herrera Nájar</strong>.';
+  }
+  showScreen('screen-bloqueado');
 }
 
 async function iniciarRegistro() {
@@ -1625,12 +1663,19 @@ async function iniciarRegistro() {
   btn.textContent = 'Verificando… ⏳';
 
   const resultado = await verificarCodigo(codigo);
-  if (resultado && resultado.yaEnviado === true) {
-    showScreen('screen-bloqueado');
-    return;
-  }
+
+  // Restaurar botón antes de cualquier bloqueo
   btn.disabled = false;
   btn.textContent = 'Iniciar evaluación →';
+
+  if (resultado && resultado.yaInfracciono === true) {
+    mostrarBloqueado(true);   // bloqueado por infracciones previas
+    return;
+  }
+  if (resultado && resultado.yaEnviado === true) {
+    mostrarBloqueado(false);  // bloqueado por envío previo exitoso
+    return;
+  }
   studentData = { nombres, apellidos, codigo };
   startExam();
 }
@@ -1749,6 +1794,14 @@ function terminarPorInfraccion() {
   clearInterval(timerInterval);
   const respondidas = activeQuestions.filter(q => isAnswered(q)).length;
   document.getElementById('term-respondidas').textContent = `${respondidas} / 20`;
+
+  // 🔒 Bloquear reintento en localStorage (inmediato, sin esperar al servidor)
+  try {
+    localStorage.setItem(lsKey(studentData.codigo), JSON.stringify({
+      yaEnviado: true, yaInfracciono: true,
+      timestamp: new Date().toISOString()
+    }));
+  } catch(e) {}
 
   fetch(EVAL_SHEETS_URL, {
     method: 'POST', mode: 'no-cors',
@@ -2099,6 +2152,14 @@ async function submitAnswers(porTiempo = false) {
       body: JSON.stringify(payload)
     });
   } catch(e) { /* no-cors siempre rechaza, es esperado */ }
+
+  // 🔒 Bloquear reintento en localStorage
+  try {
+    localStorage.setItem(lsKey(studentData.codigo), JSON.stringify({
+      yaEnviado: true, yaInfracciono: false,
+      timestamp: new Date().toISOString()
+    }));
+  } catch(e) {}
 
   document.getElementById('overlay-sending').classList.remove('active');
   showConfirmation(respondidas, porTiempo);
